@@ -1,7 +1,9 @@
 package org.scoula.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -16,6 +18,8 @@ import org.springframework.web.servlet.view.JstlView;
         "org.scoula.controller",
         "org.scoula.exception",
         "org.scoula.outcome",
+        "org.scoula.coin",
+        "org.scoula.stock",
 //        "org.scoula.board.controller",
 //        "org.scoula.board.service",
 
@@ -43,6 +47,16 @@ public class ServletConfig implements WebMvcConfigurer { //spring mvc용 컴포�
     public MultipartResolver multipartResolver() {
         StandardServletMultipartResolver resolver = new StandardServletMultipartResolver();
         return resolver;
+    }
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+
+    // ObjectMapper 빈 등록
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 
 }

@@ -23,7 +23,6 @@ import java.util.*;
 @RequestMapping("/outcome")
 @PropertySource({"classpath:/application.properties"})
 public class OutcomeController {
-
     @Value("${outcome.url}")
     private String apiUrl;
 
@@ -34,8 +33,7 @@ public class OutcomeController {
     }
 
     @GetMapping
-    public String outcome(Model model) {
-        try {
+    public ResponseEntity<String> outcome() {
             // HTTP 헤더 설정
             HttpHeaders headers = new HttpHeaders();
             headers.set("Accept", "application/json");
@@ -43,29 +41,18 @@ public class OutcomeController {
             // HttpEntity 객체 생성 (헤더만 필요)
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            // API 호출
+            // API 호출하여 응답을 ResponseEntity로 반환
             ResponseEntity<String> response = restTemplate.exchange(
                     apiUrl,
                     HttpMethod.GET,
                     entity,
-                    String.class // 응답을 일단 문자열로 받음
+                    String.class // 문자열로 응답 받음
             );
 
-            // 응답 내용을 로그로 출력
+            // 응답 로그 출력
             log.info("Response from API: " + response.getBody());
 
-            // 받은 문자열을 Object[]로 변환 시도 (JSON 형식이라고 가정)
-            ObjectMapper objectMapper = new ObjectMapper();
-            Object[] jsonResponse = objectMapper.readValue(response.getBody(), Object[].class);
-
-            // 받아온 데이터를 모델에 추가
-            model.addAttribute("outcomes", Arrays.asList(jsonResponse));
-
-        } catch (Exception e) {
-            log.error("Error occurred while fetching data from API", e);
-            model.addAttribute("outcomes", Collections.emptyList()); // 실패 시 빈 리스트 전달
-        }
-
-        return "outcome/outcome";  // outcome 뷰 반환
+            // ResponseEntity 자체를 반환
+            return response;
     }
 }

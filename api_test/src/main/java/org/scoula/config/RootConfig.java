@@ -19,7 +19,7 @@ import javax.sql.DataSource;
 
 @Configuration // 스프링 설정 파일임을 나타냅니다.
 //@ComponentScan(basePackages = {"org.scoula.board.service" })
-//@MapperScan(basePackages = {"org.scoula.board.mapper"})
+@MapperScan(basePackages = {"org.scoula.coin","org.scoula.stock"})
 @PropertySource({"classpath:/application.properties"}) // application.properties 파일에서 속성을 로드합니다.
 public class RootConfig {
 
