@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.scoula.mystock.MyStockMapper">
+
+    <!-- 전체 종목 정보를 가져오는 쿼리 -->
+    <select id="getAllStocks" resultType="org.scoula.mystock.MyStockVO">
+        SELECT `index`, standard_code, short_code, kr_stock_nm, kr_stock_abbr, market, price
+        FROM stock_info;
+    </select>
+
+    <!-- 단축코드로 price 업데이트 쿼리 -->
+    <update id="updatePriceByShortCode">
+        UPDATE stock_info
+        SET price = #{price}
+        WHERE short_code = #{stockCode}
+    </update>
+
+    <!-- 특정 종목의 정보를 short_code로 조회하는 쿼리 -->
+    <select id="getStockByShortCode" resultType="org.scoula.mystock.MyStockVO">
+        SELECT `index`, standard_code, short_code, kr_stock_nm, kr_stock_abbr, market, price
+        FROM stock_info
+        WHERE short_code = #{shortCode};
+    </select>
+
+</mapper>
