@@ -3,6 +3,7 @@ package org.scoula.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 import javax.servlet.Filter;
@@ -60,4 +61,6 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
         // 파일 업로드 설정을 적용합니다.
         registration.setMultipartConfig(multipartConfig);
     }
+
+
 }

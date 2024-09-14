@@ -4,14 +4,14 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.scoula.coin.CoinMapper">
 
-    <insert id="insertCoinPrice" parameterType="org.scoula.coin.CoinTable">
-        INSERT INTO coin_prices (coin_name, closing_price)
+    <insert id="insertCoinPrice" parameterType="org.scoula.coin.CoinVO">
+        INSERT INTO product.coin_list (coin_name, closing_price)
         VALUES (#{coinName}, #{closingPrice})
     </insert>
 
     <!-- Update query to update the closing price of an existing coin -->
-    <update id="updateCoinPrice" parameterType="org.scoula.coin.CoinTable">
-        UPDATE coin_prices
+    <update id="updateCoinPrice" parameterType="org.scoula.coin.CoinVO">
+        UPDATE product.coin_list
         SET closing_price = #{closingPrice}
         WHERE coin_name = #{coinName}
     </update>

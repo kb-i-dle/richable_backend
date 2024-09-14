@@ -6,10 +6,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
@@ -17,11 +14,14 @@ import org.springframework.web.servlet.view.JstlView;
 @ComponentScan(basePackages = {
         "org.scoula.controller",
         "org.scoula.exception",
+        "org.scoula.config",
         "org.scoula.outcome",
         "org.scoula.coin",
         "org.scoula.stock",
-//        "org.scoula.board.controller",
-//        "org.scoula.board.service",
+        "org.scoula.bond",
+        "org.scoula.deposite",
+        "org.scoula.saving",
+        "org.scoula.mystock",
 
 })
 public class ServletConfig implements WebMvcConfigurer { //spring mvc용 컴포넌트 등록을 위한 스캔 패키지
@@ -58,5 +58,15 @@ public class ServletConfig implements WebMvcConfigurer { //spring mvc용 컴포�
     public ObjectMapper objectMapper() {
         return new ObjectMapper();
     }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")  // 모든 경로에 대해 CORS 허용
+                .allowedOrigins("*")  // 모든 출처 허용
+                .allowedMethods("GET", "POST", "PUT", "DELETE")  // 허용할 HTTP 메서드
+                .allowedHeaders("*")  // 허용할 헤더
+                .maxAge(3600);  // preflight 요청 캐싱 시간 (초)
+    }
+
 
 }

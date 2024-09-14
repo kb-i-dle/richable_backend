@@ -18,22 +18,21 @@ import org.springframework.web.client.RestTemplate;
 import javax.sql.DataSource;
 
 @Configuration // 스프링 설정 파일임을 나타냅니다.
-//@ComponentScan(basePackages = {"org.scoula.board.service" })
-@MapperScan(basePackages = {"org.scoula.coin","org.scoula.stock"})
+@MapperScan(basePackages = {"org.scoula.coin","org.scoula.stock","org.scoula.bond","org.scoula.deposite","org.scoula.saving"})
 @PropertySource({"classpath:/application.properties"}) // application.properties 파일에서 속성을 로드합니다.
 public class RootConfig {
 
     // application.properties 파일에서 해당 값을 주입받습니다.
-    @Value("${jdbc.driver}")
+    @Value("${user.jdbc.driver}")
     String driver;
 
-    @Value("${jdbc.url}")
+    @Value("${user.jdbc.url}")
     String url;
 
-    @Value("${jdbc.username}")
+    @Value("${user.jdbc.username}")
     String username;
 
-    @Value("${jdbc.password}")
+    @Value("${user.jdbc.password}")
     String password;
 
     // 데이터베이스 연결을 위한 DataSource Bean을 정의합니다.

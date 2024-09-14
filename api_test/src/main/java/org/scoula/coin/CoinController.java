@@ -39,7 +39,7 @@ public class CoinController {
         this.coinService = coinService;
     }
 
-    @GetMapping("")
+    @GetMapping("/update")
     public ResponseEntity<Map<String, String>> getCoin() throws IOException {
         // Construct the full URL
         String fullUrl = UriComponentsBuilder.fromHttpUrl(URL).toUriString();
@@ -84,8 +84,8 @@ public class CoinController {
         }
 
         // Save the closing prices to the database
-//        coinService.saveCoinPrices(closingPrices);
-        coinService.updateCoinPrices(closingPrices);
+        coinService.saveCoinPrices(closingPrices);
+//        coinService.updateCoinPrices(closingPrices);
 
         // Return the closing prices as a response
         return ResponseEntity.ok(closingPrices);

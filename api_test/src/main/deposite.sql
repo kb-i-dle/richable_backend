@@ -1,7 +1,7 @@
 use test;
 # drop table savings_products;
 # drop table deposite_products;
-CREATE TABLE deposite_products (
+CREATE TABLE deposite_list (
                                   ino BIGINT AUTO_INCREMENT PRIMARY KEY,
                                   fin_co_no BIGINT,
                                   kor_co_nm  varchar(1000),

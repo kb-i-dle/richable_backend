@@ -1,21 +1,26 @@
 package org.scoula.stock;
 
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 @Slf4j
@@ -26,57 +31,97 @@ public class StockController {
     @Value("${stock.url}")
     private String apiUrl;
 
-    @Value("${stock.key}")
+    @Value("${openAPI.key}")
     private String key;
 
-    private final RestTemplate restTemplate;
     private final StockService stockService;
 
     public StockController(StockService stockService) {
-        this.restTemplate = new RestTemplate();
         this.stockService = stockService;
     }
 
-    @GetMapping
-    public ResponseEntity<String> getStockPrices() {
-        // Retrieve stock information from the database
-        List<StockInfo> stocks = stockService.getAllStocks();
+    // 가장 가까운 평일을 매개변수로
+//    private String getClosestPastWeekday() {
+//        LocalDate today = LocalDate.now();
+//        // Check if today is a weekend
+//        if (today.getDayOfWeek() == DayOfWeek.SATURDAY) {
+//            return today.minusDays(1).toString();  // Move to Friday
+//        } else if (today.getDayOfWeek() == DayOfWeek.SUNDAY) {
+//            return today.minusDays(2).toString();  // Move to Friday
+//        } else {
+//            return today.toString();  // It's a weekday, return today
+//        }
+//    }
 
-        // Collect API responses for each stock
-        List<String> stockPrices = stocks.stream().map(stock -> {
-            // Prepare the query parameters
-            String url = UriComponentsBuilder.fromHttpUrl(apiUrl)
-                    .queryParam("serviceKey", key)  // Service key
-                    .queryParam("basDt", "20240911")  // Base date (replace with dynamic date if needed)
-                    .queryParam("itmsNm", stock.getKoreanStockName())  // Stock name (Korean stock name in this case)
-                    .toUriString();
-            log.info("getStockPrices: " + url);
+    @GetMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getStockDataAndUpdateDB() {
+        try {
+            // Retrieve stock information from the database
+            List<StockVO> stocks = stockService.getAllStocks();
 
-            // HTTP Headers
+            for (StockVO stock : stocks) {
+                // Prepare the API request URL
+                String requestUrl = apiUrl + "?serviceKey=" + key +
+                        "&numOfRows=1" +     // Number of results per page
+                        "&pageNo=1" +         // Page number (you can make this dynamic if needed)
+                        "&resultType=json" +   // Response format (JSON in this case)
+                        "&basDt=20240911" +
+                        "&isinCd=" + stock.getStandardCode();  // Korean stock name
+
+                // Use HttpURLConnection to make API request
+                URL url = new URL(requestUrl);
+                log.info(url.toString());
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+
+                int responseCode = conn.getResponseCode();
+                log.info("Response code for stock {}: {}", stock.getKoreanStockName(), responseCode);
+
+                BufferedReader rd;
+                if (responseCode >= 200 && responseCode <= 300) {
+                    rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+                } else {
+                    rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
+                }
+
+                // Read API response
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = rd.readLine()) != null) {
+                    sb.append(line);
+                }
+                rd.close();
+                conn.disconnect();
+
+                // Parse JSON and extract fields
+                String responseBody = sb.toString();
+                log.info("Response Body for stock {}: {}", stock.getKoreanStockName(), responseBody);
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode rootNode = objectMapper.readTree(responseBody);
+                JsonNode items = rootNode.path("response").path("body").path("items").path("item");
+
+                // Loop through the items and extract data
+                for (JsonNode item : items) {
+                    // Extract values
+                    String standardCode = item.path("isinCd").asText();  // ISIN code (standardCode)
+                    String price = item.path("clpr").asText();  // Closing price (clpr)
+
+                    // Update data in the database using standardCode as the key
+                    stockService.updateStockData(price,standardCode);
+                }
+            }
+
+            // Return success response
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", "application/json");
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            return new ResponseEntity<>("Stock prices updated successfully", headers, HttpStatus.OK);
 
-            // HttpEntity for the request
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-
-            // API call
-            ResponseEntity<String> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    entity,
-                    String.class
-            );
-
-            log.info("Response from API for stock {}: {}", stock.getKoreanStockName(), response.getBody());
-
-            return response.getBody();  // Return the API response for this stock
-        }).collect(Collectors.toList());
-
-        // Combine the results into a single response
-        String combinedResponse = String.join("\n", stockPrices);
-
-        // Return the combined API responses
-        return ResponseEntity.ok(combinedResponse);
-
+        } catch (Exception e) {
+            log.error("Error occurred while fetching stock data and updating DB", e);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
 }

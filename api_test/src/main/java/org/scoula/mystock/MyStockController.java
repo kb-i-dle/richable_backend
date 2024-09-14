@@ -3,7 +3,7 @@ package org.scoula.mystock;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.scoula.stock.StockInfo;
+import org.scoula.stock.StockVO;
 import org.scoula.stock.StockService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -85,7 +85,7 @@ public class MyStockController {
 
     @GetMapping("/updateAllStockPrices")
     public ResponseEntity<String> updateAllStockPrices() {
-        List<StockInfo> stocksList = stockService.getAllStocks();  // Fetch all stocks from the database
+        List<StockVO> stocksList = stockService.getAllStocks();  // Fetch all stocks from the database
 
         // Iterate over each stock and fetch/update its price
         stocksList.forEach(stock -> {

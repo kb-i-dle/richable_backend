@@ -87,6 +87,9 @@ dependencies {
 
   // coin을 위한 okhttp3
   implementation 'com.squareup.okhttp3:okhttp:4.9.3' // 최신 버전은 필요에 따라 업데이트하세요
+
+  implementation 'org.json:json:20210307'  // 최신 버전을 사용할 수 있음
+  implementation 'com.auth0:java-jwt:4.4.0'  // 최신 버전은 Maven Repository에서 확인 가능
 }
 
 test {
