@@ -127,10 +127,10 @@ public class MyStockController {
     private void updateStockPriceInDatabase(String stockCode, String responseBody) throws Exception {
         JsonNode root = objectMapper.readTree(responseBody);
         JsonNode output = root.path("output");
-        int price = output.path("stck_oprc").asInt();  // Extract the stock price
+        double price = output.path("stck_oprc").asDouble();  // Extract the stock price
 
         // Update the price in the database for the given stock
-        MyStockService.updatePriceByShortCode(stockCode, price);
+        MyStockService.getStockByShortCode(stockCode, price);
     }
 
     private String padStockCode(String stockCode) {

@@ -6,7 +6,7 @@
 <mapper namespace="org.scoula.mystock.MyStockMapper">
 
     <!-- 전체 종목 정보를 가져오는 쿼리 -->
-    <select id="getAllStocks" resultType="org.scoula.mystock.MyStockInfo">
+    <select id="getAllStocks" resultType="org.scoula.mystock.MyStockVO">
         SELECT `index`, standard_code, short_code, kr_stock_nm, kr_stock_abbr, market, price
         FROM stock_info;
     </select>
@@ -19,7 +19,7 @@
     </update>
 
     <!-- 특정 종목의 정보를 short_code로 조회하는 쿼리 -->
-    <select id="getStockByShortCode" resultType="org.scoula.mystock.MyStockInfo">
+    <select id="getStockByShortCode" resultType="org.scoula.mystock.MyStockVO">
         SELECT `index`, standard_code, short_code, kr_stock_nm, kr_stock_abbr, market, price
         FROM stock_info
         WHERE short_code = #{shortCode};

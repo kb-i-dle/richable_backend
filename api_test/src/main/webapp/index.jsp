@@ -14,6 +14,7 @@
 <a href="deposite/update">deposite</a> <br>
 <a href="saving/update">saving</a> <br>
 <br>
-<a href="mystock/balance">saving</a> <br>
+<a href="mystock/balance">mystock</a> <br>
+<a href="mycoin/balance">mycoin</a> <br>
 </body>
 </html>

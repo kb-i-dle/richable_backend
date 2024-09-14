@@ -43,9 +43,9 @@ public class DatabaseConfig {
     private String asset_driver;
     @Value("${asset.jdbc.url}")
     private String asset_url;
-    @Value("${asset.username}")
+    @Value("${asset.jdbc.username}")
     private String asset_user;
-    @Value("${asset.password}")
+    @Value("${asset.jdbc.password}")
     private String asset_pw;
 
     @Bean(name = "assetDB")

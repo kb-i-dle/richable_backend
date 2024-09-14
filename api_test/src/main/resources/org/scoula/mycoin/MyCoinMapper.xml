@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.scoula.mycoin.MyCoinMapper">
+
+    <insert id="insertOrUpdateCoin" parameterType="org.scoula.mycoin.MyCoinVO">
+        INSERT INTO asset.coin (uid, balance, avg_buy_price, unit_currency, currency)
+        VALUES (#{uid}, #{balance}, #{avgBuyPrice}, #{unitCurrency}, #{currency})
+            ON DUPLICATE KEY UPDATE balance = VALUES(balance), avg_buy_price = VALUES(avg_buy_price), unit_currency = VALUES(unit_currency)
+
+    </insert>
+
+</mapper>

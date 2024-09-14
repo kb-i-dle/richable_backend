@@ -18,7 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.sql.DataSource;
 
 @Configuration // 스프링 설정 파일임을 나타냅니다.
-@MapperScan(basePackages = {"org.scoula.coin","org.scoula.stock","org.scoula.bond","org.scoula.deposite","org.scoula.saving"})
+@MapperScan(basePackages = {"org.scoula.coin","org.scoula.stock","org.scoula.bond","org.scoula.deposite","org.scoula.saving","org.scoula.mystock","org.scoula.mycoin"})
 @PropertySource({"classpath:/application.properties"}) // application.properties 파일에서 속성을 로드합니다.
 public class RootConfig {
 

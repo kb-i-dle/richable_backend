@@ -22,6 +22,7 @@ import org.springframework.web.servlet.view.JstlView;
         "org.scoula.deposite",
         "org.scoula.saving",
         "org.scoula.mystock",
+        "org.scoula.mycoin",
 
 })
 public class ServletConfig implements WebMvcConfigurer { //spring mvc용 컴포넌트 등록을 위한 스캔 패키지
