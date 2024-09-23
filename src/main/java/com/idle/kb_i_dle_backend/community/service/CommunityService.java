@@ -9,5 +9,5 @@ import java.util.List;
  */
 public interface CommunityService {
 
-    List<BoardDTO> getAllBoard();
+//    List<BoardDTO> getAllBoard();
 }
