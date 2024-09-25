@@ -1,6 +1,5 @@
 package com.idle.kb_i_dle_backend.community.repository;
 
-import com.idle.kb_i_dle_backend.community.entity.Board;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,6 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * 문법으로는 findAll, findBy컬럼명 등 이 있는데 자동완성으로 보면서하면 대충 감이 온다.
  *
  */
-public interface CommunityRepository extends JpaRepository<Board, Integer> {
-    List<Board> findAll();
+public interface CommunityRepository  {
+
 }
