@@ -64,7 +64,7 @@ public class MemberController {
     private final UserInfoService userInfoService;
     private final UserApiService userApiService;
 
-    //private userapiservice 추가
+    //private userapiservice 추가함
     // 생성자에서 UserInfoService를 추가로 주입
     public MemberController(AuthenticationManager authenticationManager, JwtProcessor jwtProcessor, MemberService memberService, UserInfoService userInfoService, UserApiRepository userApiRepository, UserApiService userApiService) {
 

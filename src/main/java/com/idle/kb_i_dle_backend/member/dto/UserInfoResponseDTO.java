@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-//ResponseDTO 만듬
+//ResponseDTO 만들었음
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

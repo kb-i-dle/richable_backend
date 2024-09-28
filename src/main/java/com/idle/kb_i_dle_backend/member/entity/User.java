@@ -5,7 +5,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.util.List;
-//setter 어노테이셔 추가
+//setter 어노테이셔 추가함
 @Entity
 @Getter
 @Setter

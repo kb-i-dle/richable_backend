@@ -31,7 +31,7 @@ public interface MemberMapper {
 
     @Update("UPDATE user_info.user_info SET password = #{newPassword} WHERE id = #{id}")
     int resetPassword(@Param("id") String id, @Param("newPassword") String newPassword);
-//Deletemember 추가
-    void deleteMemberById(String id);
+////Deletemember 추가함
+//    void deleteMemberById(String id);
 
 }

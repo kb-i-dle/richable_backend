@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
-//badge-entity
+//badge-entity 추가함
 @Entity
 @Getter
 @Table(name = "user_badge", catalog = "user_info")

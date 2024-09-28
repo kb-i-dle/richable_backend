@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Objects;
-//badgeentity-pk
+//badgeentity-pk 추가함
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor

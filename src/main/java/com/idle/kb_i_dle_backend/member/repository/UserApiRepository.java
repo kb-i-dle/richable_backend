@@ -7,6 +7,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserApiRepository extends JpaRepository<UserApiEntity, Integer> {
-    // Optional로 단일 객체 반환했습니다.
+    // Optional로 단일 객체 반환했음
     Optional<UserApiEntity> findByUid(Integer uid);
 }

@@ -139,7 +139,7 @@ public class MemberServiceImpl implements MemberService {
         return memberMapper.resetPassword(id, encodedPassword) > 0;
     }
 
-    // 마이페이지 회원 구간
+    // 마이페이지 회원 구간 만듬
 
     @Autowired
     private UserRepository userRepository;

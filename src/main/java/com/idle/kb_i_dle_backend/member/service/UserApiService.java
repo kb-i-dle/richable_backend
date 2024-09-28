@@ -14,7 +14,7 @@ import java.util.List;
         private UserApiRepository userApiRepository;
 
         public UserApiEntity getUserApiByUid(Integer uid) {
-            return userApiRepository.findByUid(uid).orElse(null);  // Optional로 단일 객체 반환
+            return userApiRepository.findByUid(uid).orElse(null);  // Optional로 단일 객체 반환하는걸 만듬
         }
     }
 

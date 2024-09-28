@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-//badgeNo
+//badgeNo함
 @Data
 @AllArgsConstructor
 public class UserBadgeDTO {

@@ -16,7 +16,7 @@ public class UserInfoService {
     @Autowired
     private UserRepository userRepository;
 
-    // 기존 사용자의 정보를 가져옴
+    // 기존 사용자의 정보를 가져온다
     public UserInfoDTO getUserInfoByNickname(String nickname) {
         User user = userRepository.findByNickname(nickname);
 
