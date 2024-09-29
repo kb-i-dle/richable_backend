@@ -1,6 +1,10 @@
 package com.idle.kb_i_dle_backend.finance.entity;
 
+import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import lombok.Getter;
 import lombok.Setter;
 import javax.persistence.Entity;
@@ -18,24 +22,36 @@ public class Bank {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int index;
 
+    @Column(name = "uid")
     private int uid;
 
-    private String org_code;
+    @Column(name = "org_code")
+    private String orgCode;
 
-    private long account_num;
+    @Column(name = "account_num")
+    private long accountNum;
 
-    private String prod_name;
+    @Column(name = "prod_name")
+    private String prodName;
 
-    private String prod_category;
+    @Column(name = "prod_category")
+    private String prodCategory;
 
-    private String account_type;
+    @Column(name = "account_type")
+    private String accountType;
 
-    private String currency_code;
+    @Column(name = "currency_code")
+    private String currencyCode;
 
-    private long balance_amt;
+    @Column(name = "balance_amt")
+    private long balanceAmt;
 
-    private int add_date;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "add_date")
+    private Date addDate;
 
-    private int delete_date;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "delete_date")
+    private Date deleteDate;
 
 }
