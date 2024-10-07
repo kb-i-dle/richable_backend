@@ -23,13 +23,13 @@ public class MemberInfoDTO {
 
     // 필요한 필드만 사용하는 생성자 (이 경우 uid, id, nickname, auth)
 
-    public MemberInfoDTO(Integer uid, String id, String nickname, String auth, String email) {
+    public MemberInfoDTO(Integer uid, String id, String email, String nickname, String auth) {
         this.uid = uid;
         this.id = id;
+        this.email = email;
         this.nickname = nickname;
         this.auth = auth;
         // 나머지 필드는 기본 값으로 설정
-        this.email = email;
         this.img = null;
         this.birthYear = null;
         this.gender = null;

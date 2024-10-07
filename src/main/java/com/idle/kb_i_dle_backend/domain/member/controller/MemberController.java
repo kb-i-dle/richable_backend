@@ -92,9 +92,8 @@ public class MemberController {
     private MemberInfoDTO getUserInfoFromAuthentication(Authentication authentication) {
         CustomUser customUser = (CustomUser) authentication.getPrincipal();
         MemberDTO member = customUser.getMember();  // Retrieve the MemberDTO object
-        log.error("memberDTO 확인 : "+ member.getNickname()+" / "+member.getEmail());
-        return new MemberInfoDTO(member.getUid(), member.getId(), member.getNickname(), member.getAuth().toString(),
-                member.getEmail());
+        log.error("memberDTO 확인 : "+member.getUid()+" / "+member.getId()+" / "+member.getEmail()+" / "+member.getNickname()+" / "+member.getAuth().toString());
+        return new MemberInfoDTO(member.getUid(), member.getId(),member.getEmail(), member.getNickname(), member.getAuth().toString());
     }
 
     @Value("${naver.client.id}")
@@ -470,25 +469,32 @@ public class MemberController {
         }
     }
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteMember(@PathVariable String id) {
-        // 서비스 로직을 통해 회원 삭제 처리
-        boolean isDeleted = memberService.deleteMemberById(id);
+    public ResponseEntity<?> deleteMember(@PathVariable String id, HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body("유효하지 않은 토큰입니다.");
+        }
+
+        String token = authorizationHeader.replace("Bearer ", "");
+        String nickname = jwtProcessor.getNickname(token);
+
+        // id로 회원 삭제 처리
+        boolean isDeleted = memberService.deleteMemberById(id);  // boolean 타입으로 수정
 
         if (isDeleted) {
-            // 삭제 성공 시 응답 데이터 구성
             Map<String, Object> data = new HashMap<>();
-            data.put("id", id);
+            data.put("id", id);  // 삭제된 ID를 응답에 포함
 
             Map<String, Object> response = new HashMap<>();
             response.put("data", data);
 
-            ResponseDTO Response = new ResponseDTO(true, response);
-            return ResponseEntity.ok(Response);
+            ResponseDTO responseDTO = new ResponseDTO(true, response);
+            return ResponseEntity.ok(responseDTO);
         } else {
             return ResponseEntity.status(404).body("회원 정보를 찾을 수 없습니다.");
         }
     }
-
 
 
 }

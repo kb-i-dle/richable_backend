@@ -13,6 +13,8 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 
     Optional<Member> findById(String id);
 
+    void deleteById(String id);
+
     Member findByNickname(String nickname);
 
     Member findByEmail(String email);
@@ -23,7 +25,4 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     @Query("SELECT m.uid FROM Member m WHERE FLOOR((YEAR(CURRENT_DATE) - m.birth_year) / 10) = :ageGroup")
     List<Integer> findUidsByAgeGroup(@Param("ageGroup") int ageGroup);
 
-    boolean deleteMemberById(Optional<Member> id);
-
-    boolean save(Optional<Member> id);
 }

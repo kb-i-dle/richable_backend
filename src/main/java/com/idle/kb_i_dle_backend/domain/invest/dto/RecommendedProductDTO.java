@@ -10,8 +10,8 @@ import lombok.Setter;
 @Setter
 @RequiredArgsConstructor
 @AllArgsConstructor
-public class RecommendedProductDTO {
-    private String prodCategroy ;
+public class    RecommendedProductDTO {
+    private String prodCategory ;
     private String name;
     private Integer price;
 }

@@ -38,19 +38,16 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.existsById(id);
     }
 
-
     @Override
     @Transactional
     public Optional<Member> getMember(String id) {
         return memberRepository.findById(id);
     }
 
-
     @Override
     public Optional<Member> findMemberByUid(int id) {
         return memberRepository.findByUid(id);
     }
-
 
     @Override
     @Transactional
@@ -111,13 +108,12 @@ public class MemberServiceImpl implements MemberService {
         if (user.isPresent()) {
             Member member = user.get();
 
-            // MemberDTO를 builder를 사용하여 생성
             return MemberDTO.builder()
                     .uid(member.getUid())
                     .id(member.getId())
                     .password(member.getPassword())
                     .email(member.getEmail())
-                    .gender(member.getGender().charAt(0))  // gender가 String일 경우
+                    .gender(member.getGender().charAt(0))
                     .birth_year(String.valueOf(member.getBirth_year()))
                     .profile(member.getProfile())
                     .agreement_info(member.getAgreementInfo())
@@ -128,24 +124,25 @@ public class MemberServiceImpl implements MemberService {
                     .auth(member.getAuth())
                     .build();
         }
-        return null; // Or handle user not found as needed
+        return null;
     }
 
     @Override
     public boolean checkPassword(String rawPassword, String encodedPassword) {
-        return false;
+        return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 
     @Override
     public boolean checkAgree(boolean info, boolean finance, String id) {
         Optional<Member> user = memberRepository.findById(id);
         if (user.isPresent()) {
-            user.get().setAgreementInfo(info);
-            user.get().setAgreementFinance(finance);
-            memberRepository.save(user); // Save updated user
+            Member member = user.get();
+            member.setAgreementInfo(info);
+            member.setAgreementFinance(finance);
+            memberRepository.save(member);
             return true;
         }
-        return false; // User not found
+        return false;
     }
 
     @Override
@@ -159,7 +156,6 @@ public class MemberServiceImpl implements MemberService {
         String verificationCode = generateRandomCode();
         verificationCodes.put(email, verificationCode);
 
-        // 이메일 전송
         String subject = "Richable 인증 코드";
         String text = "귀하의 인증 코드는 " + verificationCode + " 입니다.";
         emailService.sendSimpleMessage(email, subject, text);
@@ -174,7 +170,6 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private String generateRandomCode() {
-        // 6자리 랜덤 숫자 생성 로직
         return String.format("%06d", new Random().nextInt(1000000));
     }
 
@@ -187,21 +182,22 @@ public class MemberServiceImpl implements MemberService {
         Optional<Member> user = memberRepository.findById(id);
         if (user.isPresent()) {
             String encodedPassword = passwordEncoder.encode(newPassword);
-            user.get().setPassword(encodedPassword); // Update password
-            memberRepository.save(user); // Save updated user
+            Member member = user.get();
+            member.setPassword(encodedPassword);
+            memberRepository.save(member);
             return true;
         }
-        return false; // User not found
+        return false;
     }
 
     @Override
     public boolean deleteMemberById(String id) {
-        // ID로 회원 조회 후 삭제
         Optional<Member> member = memberRepository.findById(id);
-
-        // 회원 삭제
-        memberRepository.deleteMemberById(member);
-        return true;
+        if (member.isPresent()) {
+            memberRepository.delete(member.get());
+            return true;
+        }
+        return false;
     }
 
     @Override
