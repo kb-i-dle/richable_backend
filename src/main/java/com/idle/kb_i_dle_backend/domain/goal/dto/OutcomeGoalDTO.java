@@ -10,14 +10,14 @@ import java.util.Date;
 @Setter
 public class OutcomeGoalDTO {
     private int index;
-    private BigDecimal gather;
+    private Long gather;
     private String title;
-    private BigDecimal amount;
+    private Long amount;
     private Date date;
     private int priority;
 
 
-    public OutcomeGoalDTO(int index, BigDecimal gather, String title, BigDecimal amount, Date date, int priority) {
+    public OutcomeGoalDTO(int index, Long gather, String title, Long amount, Date date, int priority) {
         this.index = index;
         this.gather = gather;
         this.title = title;

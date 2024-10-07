@@ -7,9 +7,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class FinancialSumDTO {
-    private BigDecimal amount;  // 금융 자산 합계
+    private Long amount;  // 금융 자산 합계
 
-    public FinancialSumDTO(BigDecimal amount) {
+    public FinancialSumDTO(Long amount) {
         this.amount = amount;
     }
 }

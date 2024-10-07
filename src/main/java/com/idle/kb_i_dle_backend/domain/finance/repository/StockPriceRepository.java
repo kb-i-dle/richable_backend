@@ -1,9 +1,12 @@
 package com.idle.kb_i_dle_backend.domain.finance.repository;
 
 import com.idle.kb_i_dle_backend.domain.finance.entity.StockPrice;
+import java.util.Date;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -35,6 +38,15 @@ public interface StockPriceRepository extends JpaRepository<StockPrice, Long> {
             "ORDER BY price_difference DESC",
             nativeQuery = true)
     List<Object[]> findPriceDifferenceBetweenLastTwoDates();
+
+    // 모든 주식 정보 조회
+    @Query("SELECT s FROM StockPrice s WHERE s.date = (SELECT MAX(sp.date) FROM StockPrice sp)")
+    List<StockPrice> findAllLatestStockInfo();
+
+    // 특정 주식의 가격 업데이트
+    @Modifying
+    @Query("UPDATE StockPrice s SET s.price = :price WHERE s.standard_code = :standardCode AND s.date = :date")
+    void updateStockPrice(@Param("price") Integer price, @Param("standardCode") String standardCode, @Param("date") Date date);
 
 
 }

@@ -184,19 +184,19 @@ public class GoalServiceImpl implements GoalService {
         log.info("new Date!!!!!!!!!!!!!" + new Date());
         FinancialSumDTO todayAssetSum = financeService.getAssetSummeryByDateBefore(uid,
                 new Timestamp(System.currentTimeMillis()));
-        BigDecimal amount = todayAssetSum.getAmount().subtract(oldDateAssetSum.getAmount());
+        Long amount = todayAssetSum.getAmount()-oldDateAssetSum.getAmount();
 // 모은 금액을 우선 순위에 맞게 분배
 // 먼저 정렬
         outcomeGoals.sort(Comparator.comparing(Goal::getPriority));
 // gather을 계산하면서 DTO로 만듦
         List<OutcomeGoalDTO> outcomeGoalDTOS = new ArrayList<>();
         for(Goal goal : outcomeGoals){
-            if(amount.compareTo(BigDecimal.valueOf(goal.getAmount())) > 0){ // amount > goal.getAmount()
-                amount = amount.subtract(BigDecimal.valueOf(goal.getAmount())); // amount -= goal.getAmount();
-                outcomeGoalDTOS.add(new OutcomeGoalDTO(goal.getIndex(), BigDecimal.valueOf(goal.getAmount()), goal.getTitle(), BigDecimal.valueOf(goal.getAmount()), goal.getDate(), goal.getPriority()));
+            if(amount > goal.getAmount()){ // amount > goal.getAmount()
+                amount = amount-goal.getAmount(); // amount -= goal.getAmount();
+                outcomeGoalDTOS.add(new OutcomeGoalDTO(goal.getIndex(), goal.getAmount(), goal.getTitle(), goal.getAmount(), goal.getDate(), goal.getPriority()));
             } else {
-                outcomeGoalDTOS.add(new OutcomeGoalDTO(goal.getIndex(), amount, goal.getTitle(), BigDecimal.valueOf(goal.getAmount()), goal.getDate(), goal.getPriority()));
-                amount = BigDecimal.ZERO; // 남은 금액이 없을 때 0으로 설정
+                outcomeGoalDTOS.add(new OutcomeGoalDTO(goal.getIndex(), amount, goal.getTitle(), goal.getAmount(), goal.getDate(), goal.getPriority()));
+                amount = 0L; // 남은 금액이 없을 때 0으로 설정
             }
         }
 
@@ -232,21 +232,21 @@ public class GoalServiceImpl implements GoalService {
                     new Timestamp(System.currentTimeMillis()));
 
             //모은 금액
-            BigDecimal amount = todayAssetSum.getAmount().subtract(oldDateAssetSum.getAmount());
+            Long amount = todayAssetSum.getAmount()-oldDateAssetSum.getAmount();
 
-            if (amount.compareTo(BigDecimal.valueOf(goal.getAmount())) >= 0) { // amount >= goal.getAmount()
+            if (amount>=goal.getAmount()) { // amount >= goal.getAmount()
                 return new AssetGoalDTO(goal.getIndex(), amount, goal.getTitle(), goal.getAmount(), goal.getDate(), 0);
             } else { // 덜 모았을 때
                 // 덜 모았을 때 남은 날짜 계산
-                BigDecimal remainingAmount = BigDecimal.valueOf(goal.getAmount()).subtract(amount); // remainingAmount = goal.getAmount() - amount
-                long daysPassed = (new Date().getTime() - madeDate.getTime()) / (1000 * 60 * 60 * 24);
+                Long remainingAmount = goal.getAmount()-amount; // remainingAmount = goal.getAmount() - amount
+                Long daysPassed = (new Date().getTime() - madeDate.getTime()) / (1000 * 60 * 60 * 24);
 
                 int remainDate;
-                if (daysPassed > 0 && amount.compareTo(BigDecimal.ZERO) > 0) { // amount > 0
-                    BigDecimal dailyRate = amount.divide(BigDecimal.valueOf(daysPassed), BigDecimal.ROUND_HALF_UP); // dailyRate = amount / daysPassed
+                if (daysPassed > 0 && amount > 0) { // amount > 0
+                    Long dailyRate = amount/daysPassed; // dailyRate = amount / daysPassed
 
-                    if (dailyRate.compareTo(BigDecimal.ZERO) > 0) { // dailyRate > 0
-                        remainDate = remainingAmount.divide(dailyRate, BigDecimal.ROUND_HALF_UP).intValue(); // remainingAmount / dailyRate
+                    if (dailyRate> 0) { // dailyRate > 0
+                        remainDate = (int) (remainingAmount/dailyRate); // remainingAmount / dailyRate
                     } else {
                         remainDate = 0;
                     }

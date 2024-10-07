@@ -40,7 +40,7 @@ public class FinanceServiceImpl implements FinanceService {
     @Override
     public FinancialSumDTO getFinancialAssetsSum(int uid) {
         Optional<Member> member = memberRepository.findByUid(uid);
-        BigDecimal financialAssetsSum = BigDecimal.valueOf(calculateFinancialAssetsSum(member));
+        Long financialAssetsSum = calculateFinancialAssetsSum(member);
         return new FinancialSumDTO(financialAssetsSum);
     }
 
@@ -48,8 +48,8 @@ public class FinanceServiceImpl implements FinanceService {
     @Override
     public FinancialSumDTO getTotalAssetsSum(int uid) {
         Optional<Member> member = memberRepository.findByUid(uid);
-        BigDecimal totalAssetsSum = BigDecimal.valueOf(
-                calculateFinancialAssetsSum(member) + calculateSpotAssetsSum(member));
+        Long totalAssetsSum =
+                calculateFinancialAssetsSum(member) + calculateSpotAssetsSum(member);
         return new FinancialSumDTO(totalAssetsSum);
     }
 
@@ -404,28 +404,28 @@ public class FinanceServiceImpl implements FinanceService {
             List<Object[]> bankAssets = bankRepository.findMonthlyBankAssets(uid);
             monthlySum += bankAssets.stream()
                     .filter(row -> (int) row[0] == monthsAgo)  // month 필터링
-                    .mapToLong(row -> ((BigDecimal) row[2]).longValue())  // totalAmount 계산
+                    .mapToLong(row -> (long) row[2])  // totalAmount 계산
                     .sum();
 
             // 채권 자산 합산
             List<Object[]> bondAssets = bondRepository.findMonthlyBondAssets(uid);
             monthlySum += bondAssets.stream()
                     .filter(row -> (int) row[0] == monthsAgo)  // month 필터링
-                    .mapToLong(row -> ((BigDecimal) row[2]).longValue())  // totalAmount 계산
+                    .mapToLong(row -> ((long) row[2]))  // totalAmount 계산
                     .sum();
 
             // 가상화폐 자산 합산
             List<Object[]> coinAssets = coinRepository.findMonthlyCoinAssets(uid);
             monthlySum += coinAssets.stream()
                     .filter(row -> (int) row[0] == monthsAgo)  // month 필터링
-                    .mapToLong(row -> ((BigDecimal) row[2]).longValue())  // totalAmount 계산
+                    .mapToLong(row -> ((long) row[2]))  // totalAmount 계산
                     .sum();
 
             // 주식 자산 합산
             List<Object[]> stockAssets = stockRepository.findMonthlyStockAssets(uid);
             monthlySum += stockAssets.stream()
                     .filter(row -> (int) row[0] == monthsAgo)  // month 필터링
-                    .mapToLong(row -> ((BigDecimal) row[2]).longValue())  // totalAmount 계산
+                    .mapToLong(row -> ((long) row[2]))  // totalAmount 계산
                     .sum();
 
             return monthlySum;
@@ -442,7 +442,7 @@ public class FinanceServiceImpl implements FinanceService {
             List<Object[]> spotAssets = spotRepository.findMonthlySpotAssets(uid);
             return spotAssets.stream()
                     .filter(row -> (int) row[0] == monthsAgo)  // month 필터링
-                    .mapToLong(row -> ((BigDecimal) row[1]).longValue())  // totalAmount 계산
+                    .mapToLong(row -> ((long) row[1]))  // totalAmount 계산
                     .sum();
         }
 
@@ -454,20 +454,20 @@ public class FinanceServiceImpl implements FinanceService {
 
         for (Object[] income : incomeResults) {
             String month = (String) income[0];
-            BigDecimal totalIncome = (BigDecimal) income[1];
-            balanceMap.put(month, new MonthlyBalanceDTO(month, totalIncome, BigDecimal.ZERO, totalIncome));
+            long totalIncome = (long) income[1];
+            balanceMap.put(month, new MonthlyBalanceDTO(month, totalIncome, 0L, totalIncome));
         }
 
         for (Object[] outcome : outcomeResults) {
             String month = (String) outcome[0];
-            BigDecimal totalOutcome = (BigDecimal) outcome[1];
+            long totalOutcome = (long) outcome[1];
             if (balanceMap.containsKey(month)) {
                 MonthlyBalanceDTO dto = balanceMap.get(month);
                 dto.setTotalOutcome(totalOutcome);
-                dto.setBalance(dto.getTotalIncome().subtract(totalOutcome));
+                dto.setBalance(dto.getTotalIncome()-totalOutcome);
             } else {
                 balanceMap.put(month,
-                        new MonthlyBalanceDTO(month, BigDecimal.ZERO, totalOutcome, totalOutcome.negate()));
+                        new MonthlyBalanceDTO(month, 0L, totalOutcome, totalOutcome));
             }
         }
 
@@ -490,14 +490,14 @@ public class FinanceServiceImpl implements FinanceService {
         int upperBoundYear = lowerBoundYear + 9; // 연령대 끝 연도
 
         // 3. 해당 연령대의 평균 자산 구하기
-        BigDecimal avgAmount = assetSummaryRepository.findAverageAmountByAgeRange(lowerBoundYear, upperBoundYear);
+        long avgAmount = assetSummaryRepository.findAverageAmountByAgeRange(lowerBoundYear, upperBoundYear);
 
         // 4. 현재 사용자의 자산 정보 구하기
         AssetSummary userAssetSummary = assetSummaryRepository.findLatestByUid(member);
-        BigDecimal userTotalAmount = userAssetSummary.getTotalAmount();
+        Long userTotalAmount = userAssetSummary.getTotalAmount();
 
         // 5. 차이 계산
-        BigDecimal deferAmount = userTotalAmount.subtract(avgAmount);
+        Long deferAmount = userTotalAmount- avgAmount;
 
         // 6. 결과값 반환
         Map<String, Object> response = new HashMap<>();
@@ -541,14 +541,14 @@ public class FinanceServiceImpl implements FinanceService {
         return assetComparisonList;
     }
 
-    private void addComparisonData(String category, BigDecimal bsAmount, int lowerBoundYear, int upperBoundYear, List<Map<String, Object>> assetComparisonList) {
+    private void addComparisonData(String category, Long bsAmount, int lowerBoundYear, int upperBoundYear, List<Map<String, Object>> assetComparisonList) {
         if (bsAmount == null) {
-            bsAmount = BigDecimal.ZERO;
+            bsAmount = 0L;
         }
 
         // 연령대의 평균 자산 구하기
-        BigDecimal avgAmount = assetSummaryRepository.findAverageAmountByAgeRange(lowerBoundYear, upperBoundYear);
-        BigDecimal deferAmount = bsAmount.subtract(avgAmount);
+        Long avgAmount = assetSummaryRepository.findAverageAmountByAgeRange(lowerBoundYear, upperBoundYear);
+        Long deferAmount = bsAmount-avgAmount;
 
         // 각 카테고리별 결과값 추가
         Map<String, Object> comparisonData = new HashMap<>();

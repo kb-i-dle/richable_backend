@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class MonthlyBalanceDTO {
     private String month;
-    private BigDecimal totalIncome;
-    private BigDecimal totalOutcome;
-    private BigDecimal balance;
+    private Long totalIncome;
+    private Long totalOutcome;
+    private Long balance;
 }

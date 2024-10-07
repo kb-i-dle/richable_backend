@@ -19,17 +19,17 @@ public class AssetSummary {
     @JoinColumn(name = "uid")
     private Member uid;
 
-    private BigDecimal bond;
-    private BigDecimal deposit;
-    private BigDecimal saving;
-    private BigDecimal subscription;
-    private BigDecimal withdrawal;
-    private BigDecimal cash;
-    private BigDecimal stock;
-    private BigDecimal coin;
+    private Long bond;
+    private Long deposit;
+    private Long saving;
+    private Long subscription;
+    private Long withdrawal;
+    private Long cash;
+    private Long stock;
+    private Long coin;
 
     @Column(name = "total_amount")
-    private BigDecimal totalAmount;
+    private Long totalAmount;
 
     @Column(name = "update_date")
     private Date updateDate;
