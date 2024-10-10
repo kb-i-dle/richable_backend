@@ -21,6 +21,34 @@ public interface AssetSummaryRepository extends JpaRepository<AssetSummary, Inte
 
     AssetSummary findFirstByUidAndUpdateDateBeforeOrderByUpdateDateDesc(Member uid, Date updateDate);
 
+    // 최신 것을 가져오는 쿼리
+    @Query("SELECT a FROM AssetSummary a WHERE a.uid = :uid AND a.updateDate = (SELECT MAX(b.updateDate) FROM AssetSummary b WHERE b.uid = :uid)")
+    AssetSummary findLatestByUidZeroMonthAgo(@Param("uid") Member uid);
+
+    @Query("SELECT a FROM AssetSummary a WHERE a.uid = :uid AND a.updateDate = (SELECT MAX(b.updateDate) FROM AssetSummary b WHERE b.uid = :uid AND b.updateDate <= :date)")
+    AssetSummary findLatestByUidAndDateBefore(@Param("uid") Member uid, @Param("date") Date date);
+
+    // 다음 메서드들은 findLatestByUidAndDateBefore를 사용하도록 변경
+    default AssetSummary findLatestByUidOneMonthAgo(@Param("uid") Member uid, @Param("oneMonthAgo") Date oneMonthAgo) {
+        return findLatestByUidAndDateBefore(uid, oneMonthAgo);
+    }
+
+    default AssetSummary findLatestByUidTwoMonthAgo(@Param("uid") Member uid, @Param("twoMonthsAgo") Date twoMonthsAgo) {
+        return findLatestByUidAndDateBefore(uid, twoMonthsAgo);
+    }
+
+    default AssetSummary findLatestByUidThreeMonthAgo(@Param("uid") Member uid, @Param("threeMonthsAgo") Date threeMonthsAgo) {
+        return findLatestByUidAndDateBefore(uid, threeMonthsAgo);
+    }
+
+    default AssetSummary findLatestByUidFourMonthAgo(@Param("uid") Member uid, @Param("fourMonthsAgo") Date fourMonthsAgo) {
+        return findLatestByUidAndDateBefore(uid, fourMonthsAgo);
+    }
+
+    default AssetSummary findLatestByUidFiveMonthAgo(@Param("uid") Member uid, @Param("fiveMonthsAgo") Date fiveMonthsAgo) {
+        return findLatestByUidAndDateBefore(uid, fiveMonthsAgo);
+    }
+
     @Modifying
     @Transactional
     @Query(value = """

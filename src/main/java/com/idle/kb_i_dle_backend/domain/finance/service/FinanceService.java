@@ -34,9 +34,6 @@ public interface FinanceService {
     // AS_6 6개월간 금융 자산 + 현물량 변화 추이
     List<TotalChangeDTO> getSixMonthTotalChanges(int uid);
 
-    // AS_7 달별 저축률 추이
-    List<MonthlySavingRateDTO> getMonthlySavingRateTrend(int uid);
-
     // AS_8 달별 주식 수익률
     List<StockReturnDTO> getStockReturnTrend(int uid);
 
@@ -45,8 +42,6 @@ public interface FinanceService {
 
     // AS_10 달별 채권 수익률
     List<BondReturnDTO> getBondReturnTrend(int uid);
-
-    long sumStockAssets(Member memberOpt);
 
     List<MonthlyBalanceDTO> getMonthlyIncomeOutcomeBalance(int uid);
 

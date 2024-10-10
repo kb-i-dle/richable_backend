@@ -43,4 +43,7 @@ public class StockProductPrice implements Serializable {
 
     @Column(name = "6m_b_price")
     private Integer sixMonthsAgoPrice;
+
+    @Column(name = "short_code")
+    private String shortCode;
 }

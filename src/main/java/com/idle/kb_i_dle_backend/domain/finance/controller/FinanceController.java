@@ -158,8 +158,31 @@ public class FinanceController {
         SuccessResponseDTO Response = new SuccessResponseDTO(true, response);
 
         return ResponseEntity.ok(Response);
-
     }
 
+    @GetMapping("/product/bond")
+    public ResponseEntity<SuccessResponseDTO> getBondProductList() {
+        Integer uid = memberService.getCurrentUid();
+        List<Map<String, Object>> response = financeService.compareAssetsByCategoryWithAgeGroup(uid);
+        SuccessResponseDTO Response = new SuccessResponseDTO(true, response);
+
+        return ResponseEntity.ok(Response);
+    }
+    @GetMapping("/product/stock")
+    public ResponseEntity<SuccessResponseDTO> getStockProductList() {
+        Integer uid = memberService.getCurrentUid();
+        List<Map<String, Object>> response = financeService.compareAssetsByCategoryWithAgeGroup(uid);
+        SuccessResponseDTO Response = new SuccessResponseDTO(true, response);
+
+        return ResponseEntity.ok(Response);
+    }
+    @GetMapping("/product/coin")
+    public ResponseEntity<SuccessResponseDTO> getCoinProductList() {
+        Integer uid = memberService.getCurrentUid();
+        List<Map<String, Object>> response = financeService.compareAssetsByCategoryWithAgeGroup(uid);
+        SuccessResponseDTO Response = new SuccessResponseDTO(true, response);
+
+        return ResponseEntity.ok(Response);
+    }
 
 }

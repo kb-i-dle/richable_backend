@@ -5,8 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface StockListPriceRepository extends JpaRepository<StockProductPrice, Integer> {
+public interface StockProductPriceRepository extends JpaRepository<StockProductPrice, Integer> {
 
-
-
+    StockProductPrice findByShortCode(String shortCode);
 }

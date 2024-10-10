@@ -83,4 +83,6 @@ public interface StockRepository extends JpaRepository<Stock, Integer> {
                     "FROM asset.stock s WHERE s.uid = :uid " +
                     "GROUP BY month(s.add_date), s.prod_category", nativeQuery = true)
     List<Object[]> findMonthlyStockAssets(@Param("uid") Member uid);
+
+    Stock findByPdno(String pdno);
 }

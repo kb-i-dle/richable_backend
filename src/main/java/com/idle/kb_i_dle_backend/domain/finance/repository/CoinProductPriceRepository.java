@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CoinListPriceRepository extends JpaRepository<CoinProductPrice, Integer> {
+public interface CoinProductPriceRepository extends JpaRepository<CoinProductPrice, Integer> {
 
 }

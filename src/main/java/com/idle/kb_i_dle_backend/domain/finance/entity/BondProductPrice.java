@@ -1,5 +1,6 @@
 package com.idle.kb_i_dle_backend.domain.finance.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -11,7 +12,9 @@ import javax.persistence.*;
 @Getter
 @Setter
 @Table(name="bond_list_price" , catalog="product")
-public class BondProductPrice {
+public class BondProductPrice implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,4 +47,6 @@ public class BondProductPrice {
 
     @Column(name = "6m_b_price")
     private int sixMonthsAgoPrice;
+
+
 }
