@@ -77,15 +77,13 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         // CORS 정책 오류 해결
         registry.addMapping("/**")
-                .allowedMethods("*")
+                .allowedOrigins("https://www.richable.site", "http://richable.site", "http://localhost:5173",
+                        "http://localhost:4173")  // 허용할 Origin
                 .allowedOriginPatterns("*")
-                .allowedOrigins("http://localhost:5173")
-                .allowedOrigins(frontURL)
-                .allowedOrigins("https://kb-i-dle.github.io/richable_frontend")
-                .allowedOrigins("https://kb-i-dle.github.io")
-                .allowedOrigins("http://localhost:4173/richable_frontend")
-                .allowedOrigins("http://localhost:4173")
-                .allowedOrigins("*");
+                .allowedMethods("*")
+                .allowedHeaders("*")
+                .allowCredentials(true);  // 쿠키 및 인증 정보를 포함할 수 있도록 설정
+
     }
 
     @Bean

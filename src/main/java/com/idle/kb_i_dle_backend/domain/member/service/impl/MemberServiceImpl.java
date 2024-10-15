@@ -277,6 +277,19 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public Member findMemberByNickname(String nickname) {
+        try {
+            Member member = memberRepository.findByNickname(nickname);
+            if (member == null) {
+                throw new MemberException(ErrorCode.INVALID_MEMEBER);
+            }
+            return member;
+        } catch (Exception e) {
+            throw new MemberException(ErrorCode.INVALID_MEMEBER, e.getMessage());
+        }
+    }
+
+    @Override
     @Transactional
     public void MemberJoin(MemberJoinDTO memberjoindto) {
         try {

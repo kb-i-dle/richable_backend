@@ -23,6 +23,8 @@ public interface MemberService {
 
     Member findMemberByUid(int id);
 
+    Member findMemberByNickname(String nickname);
+
     void MemberJoin(MemberJoinDTO memberjoindto);
 
     boolean checkAgree(boolean info, boolean finance, String id);
