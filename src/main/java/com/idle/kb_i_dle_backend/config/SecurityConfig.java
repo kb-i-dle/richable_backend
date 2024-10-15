@@ -72,7 +72,9 @@ public class SecurityConfig {
         config.addAllowedOrigin("https://kb-i-dle.github.io");
         config.addAllowedOrigin("http://localhost:4173/richable_frontend");
         config.addAllowedOrigin("http://localhost:4173");
-        config.addAllowedOrigin("*");
+        // 와일드카드 대신 패턴 사용
+        config.addAllowedOriginPattern("*"); // allowedOriginPatterns 사용
+
         config.addAllowedHeader("*"); // 모든 헤더 허용
         config.addAllowedMethod(HttpMethod.GET);
         config.addAllowedMethod(HttpMethod.POST);
