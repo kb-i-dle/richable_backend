@@ -66,22 +66,10 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowCredentials(true); // 쿠키나 인증 정보 허용
-<<<<<<< HEAD
-        config.addAllowedOrigin("http://localhost:5173"); // 허용할 출처
-        config.addAllowedOrigin("http://localhost:8080");
-        config.addAllowedOrigin("https://nid.naver.com");
-        config.addAllowedOrigin("https://kb-i-dle.github.io/richable_frontend");
-        config.addAllowedOrigin("https://kb-i-dle.github.io");
-        config.addAllowedOrigin("http://localhost:4173/richable_frontend");
-        config.addAllowedOrigin("http://localhost:4173");
-        // 와일드카드 대신 패턴 사용
-        config.addAllowedOriginPattern("*"); // allowedOriginPatterns 사용
-=======
 
         config.setAllowedOrigins(Arrays.asList("https://richable.site", "http://richable.site", "http://localhost:5173",
                 "http://localhost:4173"));
         config.addAllowedOriginPattern("*");
->>>>>>> 9420321a799a4558e0fa87dc17f72a5b4c467ea4
 
         config.addAllowedHeader("*"); // 모든 헤더 허용
         config.addAllowedMethod("*");
