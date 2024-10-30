@@ -111,11 +111,13 @@ public enum ErrorCode {
     TOKEN_IS_NOT_VALID(401, "M07", "token is not valid"),
     PERMISSION_FORBIDDEN(403, "M08", "permission forbidden"),
     NAVER_LOGIN_FAILED(400, "M09", "navigate failed"),
+    INVALID_INPUT(500,"M10","Invalid Input"),
 
 
     //S3
     INVALID_FILE(400, "S01", "Invalid File"),
-    NO_SUCH_ALGO(500, "S02", "INVALID ALGO");;
+    NO_SUCH_ALGO(500, "S02", "INVALID ALGO"),
+    ;;
 
 
     /**

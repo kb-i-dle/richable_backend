@@ -1,8 +1,6 @@
 package com.idle.kb_i_dle_backend.domain.member.service;
 
-import com.idle.kb_i_dle_backend.domain.member.dto.LoginDTO;
-import com.idle.kb_i_dle_backend.domain.member.dto.MemberDTO;
-import com.idle.kb_i_dle_backend.domain.member.dto.MemberJoinDTO;
+import com.idle.kb_i_dle_backend.domain.member.dto.*;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +33,7 @@ public interface MemberService {
 
     String generateAndSaveVerificationCode(String email);
 
-    Map<String, Object> verifyCode(String email, String code);
+    VerificationResult verifyCode(String email, String code, VerificationType type);
 
     boolean resetPassword(String id, String newPassword);
 

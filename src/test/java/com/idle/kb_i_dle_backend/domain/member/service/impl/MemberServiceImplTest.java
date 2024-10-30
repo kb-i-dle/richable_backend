@@ -7,6 +7,8 @@ import com.idle.kb_i_dle_backend.domain.member.exception.MemberException;
 import com.idle.kb_i_dle_backend.domain.member.repository.MemberRepository;
 import com.idle.kb_i_dle_backend.domain.member.service.MemberApiService;
 import com.idle.kb_i_dle_backend.domain.member.util.JwtProcessor;
+import com.idle.kb_i_dle_backend.domain.member.dto.*;
+import com.idle.kb_i_dle_backend.global.codes.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,8 +22,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
@@ -60,6 +64,8 @@ class MemberServiceImplTest {
     private HttpServletRequest request;
     @Mock
     private AssetSummaryRepository assetSummaryRepository;
+    @Mock
+    private Map<String, String> verificationCodes;
 
     @InjectMocks
     private MemberServiceImpl memberService;
@@ -94,6 +100,7 @@ class MemberServiceImplTest {
                 .build();
 
         testLoginDTO = new LoginDTO("testId", "testPassword");
+        ReflectionTestUtils.setField(memberService, "verificationCodes", verificationCodes);
     }
 
     @Test
@@ -350,14 +357,95 @@ class MemberServiceImplTest {
         // given
         String email = "test@test.com";
         String wrongCode = "999999";
+        given(verificationCodes.get(email)).willReturn("123456"); // 저장된 인증 코드 모의
+
+        // when & then
+        assertThatThrownBy(() ->
+                memberService.verifyCode(email, wrongCode, VerificationType.ID))
+                .isInstanceOf(MemberException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_VERIFICATION_CODE)
+                .hasMessage("인증 코드가 일치하지 않습니다.");
+    }
+
+    @Test
+    @DisplayName("유효한 인증 코드로 ID 검증 시 성공 응답을 반환한다")
+    @Transactional
+    void verifyCode_ValidCode_ForId() {
+        // given
+        String email = "test@test.com";
+        String validCode = "123456";
+        given(verificationCodes.get(email)).willReturn(validCode);
+        given(memberRepository.findByEmail(email)).willReturn(testMember);
 
         // when
-        Map<String, Object> result = memberService.verifyCode(email, wrongCode);
+        VerificationResult result = memberService.verifyCode(email, validCode, VerificationType.ID);
 
         // then
         assertThat(result)
-                .containsEntry("verified", false)
-                .containsEntry("message", "인증 코드가 일치하지 않습니다.");
+                .isNotNull()
+                .satisfies(r -> {
+                    assertThat(r.isVerified()).isTrue();
+                    assertThat(r.getMessage()).isEqualTo("인증이 성공적으로 완료되었습니다.");
+                    assertThat(r.getId()).isEqualTo(testMember.getId());
+                });
+    }
+
+    @Test
+    @DisplayName("유효한 인증 코드로 비밀번호 검증 시 성공 응답을 반환한다")
+    @Transactional
+    void verifyCode_ValidCode_ForPassword() {
+        // given
+        String email = "test@test.com";
+        String validCode = "123456";
+        given(verificationCodes.get(email)).willReturn(validCode);
+        given(memberRepository.findByEmail(email)).willReturn(testMember);
+
+        // when
+        VerificationResult result = memberService.verifyCode(email, validCode, VerificationType.PASSWORD);
+
+        // then
+        assertThat(result)
+                .isNotNull()
+                .satisfies(r -> {
+                    assertThat(r.isVerified()).isTrue();
+                    assertThat(r.getMessage()).isEqualTo("비밀번호를 재설정할 수 있습니다.");
+                    assertThat(r.isCanResetPassword()).isTrue();
+                });
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 이메일로 검증 시 예외가 발생한다")
+    @Transactional
+    void verifyCode_InvalidEmail() {
+        // given
+        String email = "nonexistent@test.com";
+        String validCode = "123456";
+        given(verificationCodes.get(email)).willReturn(validCode);
+        given(memberRepository.findByEmail(email)).willReturn(null);
+
+        // when & then
+        assertThatThrownBy(() ->
+                memberService.verifyCode(email, validCode, VerificationType.ID))
+                .isInstanceOf(MemberException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MEMBER_NOT_FOUND)
+                .hasMessage("해당 이메일로 등록된 사용자를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("저장된 인증 코드가 없을 경우 예외가 발생한다")
+    @Transactional
+    void verifyCode_NoStoredCode() {
+        // given
+        String email = "test@test.com";
+        String code = "123456";
+        given(verificationCodes.get(email)).willReturn(null);
+
+        // when & then
+        assertThatThrownBy(() ->
+                memberService.verifyCode(email, code, VerificationType.ID))
+                .isInstanceOf(MemberException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_VERIFICATION_CODE)
+                .hasMessage("인증 코드가 만료되었습니다.");
     }
 
     @Test

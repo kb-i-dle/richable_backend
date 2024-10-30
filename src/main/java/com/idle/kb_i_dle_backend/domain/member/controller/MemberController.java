@@ -1,8 +1,9 @@
 package com.idle.kb_i_dle_backend.domain.member.controller;
 
-
 import com.idle.kb_i_dle_backend.domain.member.dto.LoginDTO;
 import com.idle.kb_i_dle_backend.domain.member.dto.MemberJoinDTO;
+import com.idle.kb_i_dle_backend.domain.member.dto.VerificationResult;
+import com.idle.kb_i_dle_backend.domain.member.dto.VerificationType;
 import com.idle.kb_i_dle_backend.domain.member.repository.MemberRepository;
 import com.idle.kb_i_dle_backend.domain.member.service.MemberService;
 import com.idle.kb_i_dle_backend.global.dto.ErrorResponseDTO;
@@ -108,16 +109,9 @@ public class MemberController {
     }
 
     @PostMapping("/find/id/auth")
-    public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> payload) {
-        Map<String, Object> result = memberService.verifyCode(payload.get("email"), payload.get("code"));
-        boolean isVerified = (boolean) result.get("verified");
-        if (isVerified) {
-            String id = memberRepository.findByEmail(payload.get("email")).getId();
-            SuccessResponseDTO successResponse = new SuccessResponseDTO(true, id);
-            return ResponseEntity.ok(successResponse);
-        } else {
-            return ResponseEntity.badRequest().body(Map.of("message", "잘못된 인증 코드입니다."));
-        }
+    public ResponseEntity<SuccessResponseDTO> verifyIdCode(@RequestBody Map<String, String> payload) {
+        VerificationResult result = memberService.verifyCode(payload.get("email"), payload.get("code"), VerificationType.ID);
+        return ResponseEntity.ok(new SuccessResponseDTO(result.isVerified(), result));
     }
 
     @PostMapping("/find/pw")
@@ -127,15 +121,9 @@ public class MemberController {
     }
 
     @PostMapping("/find/pw/auth")
-    public ResponseEntity<?> verifyCode2(@RequestBody Map<String, String> payload) {
-        Map<String, Object> result = memberService.verifyCode(payload.get("email"), payload.get("code"));
-        boolean isVerified = (boolean) result.get("verified");
-        if (isVerified) {
-            SuccessResponseDTO successResponse = new SuccessResponseDTO(true, result);
-            return ResponseEntity.ok(successResponse);
-        } else {
-            return ResponseEntity.badRequest().body(Map.of("message", "잘못된 인증 코드입니다."));
-        }
+    public ResponseEntity<SuccessResponseDTO> verifyPasswordCode(@RequestBody Map<String, String> payload) {
+        VerificationResult result = memberService.verifyCode(payload.get("email"), payload.get("code"), VerificationType.PASSWORD);
+        return ResponseEntity.ok(new SuccessResponseDTO(result.isVerified(), result));
     }
 
     @PostMapping("/set/pw")
