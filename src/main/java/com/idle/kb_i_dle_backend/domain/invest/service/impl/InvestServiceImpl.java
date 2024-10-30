@@ -1,5 +1,6 @@
 package com.idle.kb_i_dle_backend.domain.invest.service.impl;
 
+import com.idle.kb_i_dle_backend.config.exception.CustomException;
 import com.idle.kb_i_dle_backend.domain.finance.entity.Bank;
 import com.idle.kb_i_dle_backend.domain.finance.entity.Bond;
 import com.idle.kb_i_dle_backend.domain.finance.entity.BondProduct;
@@ -19,6 +20,7 @@ import com.idle.kb_i_dle_backend.domain.invest.service.InvestService;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
 import com.idle.kb_i_dle_backend.domain.member.repository.MemberRepository;
 import com.idle.kb_i_dle_backend.domain.member.service.MemberService;
+import com.idle.kb_i_dle_backend.global.codes.ErrorCode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -44,6 +46,7 @@ public class InvestServiceImpl implements InvestService {
     private final MemberRepository memberRepository;
 
 
+    //user의 전체 재산을 investDTO에 넣음
     @Override
     public List<InvestDTO> getInvestList(int uid) throws Exception {
         Member member = memberService.findMemberByUid(uid);
@@ -61,44 +64,71 @@ public class InvestServiceImpl implements InvestService {
         return investDTOs;
     }
 
+    //user의 전체 재산의 합을 구함.
     @Override
     public long totalAsset(int uid) throws Exception {
         Member member = memberService.findMemberByUid(uid);
         List<InvestDTO> investDTOs = getInvestList(uid);
-
         return investDTOs.stream()
                 .mapToLong(InvestDTO::getPrice)
                 .sum();
     }
 
+    //user의 전체 투자자산 중 가장 높은 비중을 차지하는 카테고리를 구함.
     @Override
-    public MaxPercentageCategoryDTO getMaxPercentageCategory(int uid) throws Exception {
+    public MaxPercentageCategoryDTO getMaxPercentageCategory(int uid) {
         Member member = memberRepository.findByUid(uid);
-        List<CategorySumDTO> categorySums = getInvestmentTendency(uid);
+        List<CategorySumDTO> categorySums;
 
-        return categorySums.stream()
-                .max(Comparator.comparingDouble(CategorySumDTO::getPercentage))
-                .map(category -> new MaxPercentageCategoryDTO(
-                        category.getCategory(),
-                        category.getTotalPrice(),
-                        category.getPercentage()))
-                .orElseThrow(() -> new Exception("No categories found"));
+        try {
+            categorySums = getInvestmentTendency(uid);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.NO_INVESTMENT_DATA, "투자 데이터를 찾는 중 오류가 발생했습니다.");
+        }
+
+        if(categorySums.size() == 0) {
+            throw new CustomException(ErrorCode.NO_INVESTMENT_DATA,"투자데이터를 찾을 수 없습니다.");
+        }
+        else{
+            return categorySums.stream()
+                    .max(Comparator.comparingDouble(CategorySumDTO::getPercentage))
+                    .map(category -> new MaxPercentageCategoryDTO(
+                            category.getCategory(),
+                            category.getTotalPrice(),
+                            category.getPercentage()))
+                    .orElseThrow(() -> new CustomException(ErrorCode.NO_CATEGORY_FOUND,"No categories found"));
+        }
     }
 
     @Override
-    public AvailableCashDTO getAvailableCash(int uid) throws Exception {
+    public AvailableCashDTO getAvailableCash(int uid) {
         Member member = memberService.findMemberByUid(uid);
         List<Bank> banks = bankRepository.findByUidAndSpecificCategoriesAndDeleteDateIsNull(member);
 
-        Long totalAvailableCash = banks.stream()
-                .mapToLong(Bank::getBalanceAmt)
-                .sum();
+        if (banks.isEmpty()) {
+            throw new CustomException(ErrorCode.NO_AVAILABLE_CASH, "여유자금을 찾을 수 없습니다.");
+        }
+        else{
+            // 여유 자산과 전체 자산 계산 및 예외 처리
+            Long totalAvailableCash = banks.stream()
+                    .mapToLong(Bank::getBalanceAmt)
+                    .sum();
 
-        Long totalAsset = totalAsset(uid);
+            Long totalAsset;
+            try {
+                totalAsset = totalAsset(uid);
+            } catch (Exception e) {
+                // totalAsset 메서드에서 예외 발생 시 CustomException 던지기
+                throw new CustomException(ErrorCode.NO_ASSETS_FOUND, "전체 자산을 계산하는 중 오류가 발생했습니다.");
+            }
 
-        return new AvailableCashDTO(totalAvailableCash, totalAsset);
+            return new AvailableCashDTO(totalAvailableCash, totalAsset);
+        }
     }
 
+
+
+    //각 재산의 합과 비중을 보내줌.
     @Override
     public List<CategorySumDTO> getInvestmentTendency(int uid) throws Exception {
         Member member = memberService.findMemberByUid(uid);
@@ -120,8 +150,9 @@ public class InvestServiceImpl implements InvestService {
                 .collect(Collectors.toList());
     }
 
+    //추천 상품 5개 짤라서 보냄.
     @Override
-    public List<RecommendedProductDTO> getRecommendedProducts(int uid) throws Exception {
+    public List<RecommendedProductDTO> getRecommendedProducts(int uid){
         MaxPercentageCategoryDTO maxCategory = getMaxPercentageCategory(uid);
         List<RecommendedProductDTO> recommendedProducts = new ArrayList<>();
 
@@ -146,94 +177,111 @@ public class InvestServiceImpl implements InvestService {
                     .collect(Collectors.toList()));
         }
 
+        if (recommendedProducts.isEmpty()) {
+            throw new CustomException(ErrorCode.NO_RECOMMENDED_PRODUCTS, "추천 상품을 찾을 수 없습니다.");
+        }
+
         return recommendedProducts;
+
     }
 
     @Override
-    public List<HighReturnProductDTO> getHighReturnStock(int uid) throws Exception {
+    public List<HighReturnProductDTO> getHighReturnStock(int uid){
         List<Object[]> highReturnStocks = stockPriceRepository.findPriceDifferenceBetweenLastTwoDates();
-        return highReturnStocks.stream()
-                .filter(stock -> stock.length >= 5 && stock[2] != null && stock[3] != null && stock[4] != null)
-                .map(stock -> {
-                    String standardCode = (String) stock[0];
-                    String stockName = (String) stock[1];
-                    int priceDifference = ((Number) stock[2]).intValue();
-                    int previousPrice = ((Number) stock[3]).intValue();
-                    int latestPrice = ((Number) stock[4]).intValue();
 
-                    double rate = previousPrice != 0 ? (double) priceDifference / previousPrice * 100 : 0;
-                    String formattedRate = String.format("%.2f%%", rate);
+        if (highReturnStocks.isEmpty()) {
+            throw new CustomException(ErrorCode.NO_HIGH_RETURN_STOCK, "수익률 높은 주식을 찾을 수 없습니다.");
+        }
+        else{
+            return highReturnStocks.stream()
+                    .filter(stock -> stock.length >= 5 && stock[2] != null && stock[3] != null && stock[4] != null)
+                    .map(stock -> {
+                        String standardCode = (String) stock[0];
+                        String stockName = (String) stock[1];
+                        int priceDifference = ((Number) stock[2]).intValue();
+                        int previousPrice = ((Number) stock[3]).intValue();
+                        int latestPrice = ((Number) stock[4]).intValue();
 
-                    return new HighReturnProductDTO(
-                            "주식",
-                            stockName,
-                            latestPrice,
-                            formattedRate
-                    );
-                })
-                .limit(5)
-                .collect(Collectors.toList());
+                        double rate = previousPrice != 0 ? (double) priceDifference / previousPrice * 100 : 0;
+                        String formattedRate = String.format("%.2f%%", rate);
+
+                        return new HighReturnProductDTO(
+                                "주식",
+                                stockName,
+                                latestPrice,
+                                formattedRate
+                        );
+                    })
+                    .limit(5)
+                    .collect(Collectors.toList());
+        }
     }
 
     @Override
-    public List<HighReturnProductDTO> getHighReturnCoin(int uid) throws Exception {
+    public List<HighReturnProductDTO> getHighReturnCoin(int uid){
         List<Object[]> highReturnCoins = coinPriceRepository.findPriceDifferenceBetweenLastTwoDates();
-        return highReturnCoins.stream()
-                .filter(coin -> coin.length >= 4 && coin[1] != null && coin[2] != null && coin[3] != null)
-                .map(coin -> {
-                    String coinName = (String) coin[0];
-                    double priceDifference = ((Number) coin[1]).doubleValue();
-                    double previousPrice = ((Number) coin[2]).doubleValue();
-                    double latestPrice = ((Number) coin[3]).doubleValue();
 
-                    double rate = previousPrice != 0 ? (priceDifference / previousPrice) * 100 : 0;
-                    String formattedRate = String.format("%.2f%%", rate);
+        if (highReturnCoins.isEmpty()) {
+            throw new CustomException(ErrorCode.NO_HIGH_RETURN_COIN,"수익률 높은 코인을 찾을 수 없습니다.");
+        }
+        else{
+            return highReturnCoins.stream()
+                    .filter(coin -> coin.length >= 4 && coin[1] != null && coin[2] != null && coin[3] != null)
+                    .map(coin -> {
+                        String coinName = (String) coin[0];
+                        double priceDifference = ((Number) coin[1]).doubleValue();
+                        double previousPrice = ((Number) coin[2]).doubleValue();
+                        double latestPrice = ((Number) coin[3]).doubleValue();
 
-                    return new HighReturnProductDTO(
-                            "코인",
-                            coinName,
-                            (int) latestPrice,
-                            formattedRate
-                    );
-                })
-                .limit(5)
-                .collect(Collectors.toList());
+                        double rate = previousPrice != 0 ? (priceDifference / previousPrice) * 100 : 0;
+                        String formattedRate = String.format("%.2f%%", rate);
+
+                        return new HighReturnProductDTO(
+                                "코인",
+                                coinName,
+                                (int) latestPrice,
+                                formattedRate
+                        );
+                    })
+                    .limit(5)
+                    .collect(Collectors.toList());
+        }
     }
 
     @Override
     public HighReturnProductsDTO getHighReturnProducts(int uid) {
         CompletableFuture<List<HighReturnProductDTO>> stocksFuture = CompletableFuture.supplyAsync(() -> {
-            try {
-                return getHighReturnStock(uid);
-            } catch (Exception e) {
-                log.error("Error getting high return stocks", e);
-                return List.of();
+            List<HighReturnProductDTO> stocks = getHighReturnStock(uid);
+            if (stocks.isEmpty()) {
+                throw new CustomException(ErrorCode.NO_HIGH_RETURN_STOCK, "수익률 높은 주식을 찾을 수 없습니다.");
             }
+            return stocks;
         });
 
         CompletableFuture<List<HighReturnProductDTO>> coinsFuture = CompletableFuture.supplyAsync(() -> {
-            try {
-                return getHighReturnCoin(uid);
-            } catch (Exception e) {
-                log.error("Error getting high return coins", e);
-                return List.of();
+            List<HighReturnProductDTO> coins = getHighReturnCoin(uid);
+            if (coins.isEmpty()) {
+                throw new CustomException(ErrorCode.NO_HIGH_RETURN_COIN, "수익률 높은 코인을 찾을 수 없습니다.");
             }
+            return coins;
         });
 
-        try {
-            CompletableFuture.allOf(stocksFuture, coinsFuture).join();
+        // CompletableFuture를 통해 결과를 기다리고 각 리스트를 가져옴
+        stocksFuture.join();
+        coinsFuture.join();
 
-            List<HighReturnProductDTO> stocks = stocksFuture.get();
-            List<HighReturnProductDTO> coins = coinsFuture.get();
+        List<HighReturnProductDTO> stocks = stocksFuture.getNow(List.of());
+        List<HighReturnProductDTO> coins = coinsFuture.getNow(List.of());
 
-            List<HighReturnProductDTO> allProducts = new ArrayList<>(stocks);
-            allProducts.addAll(coins);
+        List<HighReturnProductDTO> allProducts = new ArrayList<>(stocks);
+        allProducts.addAll(coins);
+
+        // allProducts가 비어 있을 경우 예외 발생
+        if (allProducts.isEmpty()) {
+            throw new CustomException(ErrorCode.NO_HIGH_RETURN_PRODUCTS, "수익률 높은 자산을 찾을 수 없습니다.");
+        } else {
             allProducts.sort(Comparator.comparing(HighReturnProductDTO::getRate).reversed());
-
             return new HighReturnProductsDTO(allProducts);
-        } catch (Exception e) {
-            log.error("Error getting high return products", e);
-            return new HighReturnProductsDTO(List.of());
         }
     }
 }

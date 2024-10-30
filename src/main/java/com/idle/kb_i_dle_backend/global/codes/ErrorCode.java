@@ -97,6 +97,14 @@ public enum ErrorCode {
     INVALID_INCOME(200, "I01", "USER DONT HAVE INCOME"),
 
     //Invest
+    NO_ASSETS_FOUND(200, "IV01", "No assets found for the user"),
+    NO_INVESTMENT_DATA(200, "IV02", "No investment data found"),
+    NO_CATEGORY_FOUND(200, "IV03", "No category found for the user"),
+    NO_AVAILABLE_CASH(200, "IV04", "No available cash"),
+    NO_RECOMMENDED_PRODUCTS(200, "IV05", "No recommended products found"),
+    NO_HIGH_RETURN_STOCK(200, "IV06", "No high return stock products found"),
+    NO_HIGH_RETURN_COIN(200, "IV07", "No high return coin products found"),
+    NO_HIGH_RETURN_PRODUCTS(200, "IV08", "No high return products found"),
 
     //OUTCOME
     INVALID_OUTCOME(200, "O01", "User dont have outcome"),
