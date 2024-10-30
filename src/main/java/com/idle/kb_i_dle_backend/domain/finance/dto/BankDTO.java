@@ -16,7 +16,7 @@ import java.util.Date;
 public class BankDTO {
     private Integer index;
     private String orgCode;
-    private Long accountNum;
+    private String accountNum;
     private String prodName;
     private String prodCategory;
     private String accountType;

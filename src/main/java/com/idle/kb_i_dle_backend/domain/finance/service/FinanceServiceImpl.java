@@ -33,6 +33,7 @@ import com.idle.kb_i_dle_backend.domain.finance.repository.StockProductRepositor
 import com.idle.kb_i_dle_backend.domain.finance.repository.StockRepository;
 import com.idle.kb_i_dle_backend.domain.income.repository.IncomeRepository;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
+import com.idle.kb_i_dle_backend.domain.member.repository.MemberRepository;
 import com.idle.kb_i_dle_backend.domain.member.service.MemberService;
 import com.idle.kb_i_dle_backend.domain.outcome.repository.OutcomeUserRepository;
 
@@ -46,10 +47,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -70,6 +77,7 @@ public class FinanceServiceImpl implements FinanceService {
     private final IncomeRepository incomeRepository;
     private final OutcomeUserRepository outComeUserRepository;
     private final AssetSummaryRepository assetSummaryRepository;
+    private final MemberRepository memberRepository;
 
     private final MemberService memberService;
 
@@ -212,13 +220,16 @@ public class FinanceServiceImpl implements FinanceService {
             for (Stock stock : stocks) {
                 StockProduct stockProduct = stockProductRepository.findByShortCode(String.valueOf(stock.getPdno()));
 
-                double currentPrice;
-                if (i == 0) {
-                    // 현재 가격 (StockProduct의 price 사용)
-                    currentPrice = stockProduct.getPrice() != null ? stockProduct.getPrice() : 0;
-                } else {
-                    // i개월 전 가격
-                    currentPrice = getPriceForMonth(stockProduct.getStockProductPrice(), i);
+                // stockProduct가 null이면 가격을 0으로 설정
+                double currentPrice = 0;
+                if (stockProduct != null) {
+                    if (i == 0) {
+                        // 현재 가격 (StockProduct의 price 사용)
+                        currentPrice = stockProduct.getPrice() != null ? stockProduct.getPrice() : 0;
+                    } else {
+                        // i개월 전 가격
+                        currentPrice = getPriceForMonth(stockProduct.getStockProductPrice(), i);
+                    }
                 }
 
                 double purchasePrice = stock.getAvgBuyPrice();
@@ -258,18 +269,14 @@ public class FinanceServiceImpl implements FinanceService {
         Member member = memberService.findMemberByUid(uid);
         List<CoinReturnDTO> coinReturns = new ArrayList<>();
         List<Coin> coins = coinRepository.findAllByUidAndDeleteDateIsNull(member);
-
         for (int i = 0; i < 6; i++) {
             double totalCoinReturn = 0;
             int coinCount = 0;
-
             for (Coin coin : coins) {
                 CoinProduct coinProduct = coinRepository.findByCoinName(coin.getCurrency());
                 if (coinProduct == null) continue;
-
                 CoinProductPrice coinProductPrice = coinProduct.getCoinProductPrice();
                 if (coinProductPrice == null) continue;
-
                 double currentPrice;
                 if (i == 0) {
                     // 현재 가격 (CoinProduct의 closingPrice 사용)
@@ -278,7 +285,6 @@ public class FinanceServiceImpl implements FinanceService {
                     // i개월 전 가격
                     currentPrice = getPriceForMonth(coinProductPrice, i);
                 }
-
                 double purchasePrice = coin.getAvgBuyPrice();
 
                 if (purchasePrice > 0 && currentPrice > 0) {
@@ -287,7 +293,6 @@ public class FinanceServiceImpl implements FinanceService {
                     coinCount++;
                 }
             }
-
             if (coinCount > 0) {
                 double averageCoinReturn = totalCoinReturn / coinCount;
                 coinReturns.add(new CoinReturnDTO(i + 1, Double.parseDouble(df.format(averageCoinReturn))));
@@ -295,7 +300,6 @@ public class FinanceServiceImpl implements FinanceService {
                 coinReturns.add(new CoinReturnDTO(i + 1, 0.0));
             }
         }
-
         return coinReturns;
     }
 
@@ -387,12 +391,12 @@ public class FinanceServiceImpl implements FinanceService {
         List<Object[]> incomeResults = incomeRepository.findMonthlyIncomeByUid(uid);
         List<Object[]> outcomeResults = outComeUserRepository.findMonthlyOutcomeByUid(uid);
 
-        Map<String, MonthlyBalanceDTO> balanceMap = new HashMap<>();
+        TreeMap<String, MonthlyBalanceDTO> balanceMap = new TreeMap<>();
 
         for (Object[] income : incomeResults) {
             String month = (String) income[0];
             long totalIncome = ((BigDecimal) income[1]).longValueExact();
-            balanceMap.put(month, new MonthlyBalanceDTO(month, totalIncome, 0L, totalIncome));
+            balanceMap.put(month, new MonthlyBalanceDTO(month, totalIncome, 0L, totalIncome,(double) 100));
         }
 
         for (Object[] outcome : outcomeResults) {
@@ -402,9 +406,15 @@ public class FinanceServiceImpl implements FinanceService {
                 MonthlyBalanceDTO dto = balanceMap.get(month);
                 dto.setTotalOutcome(totalOutcome);
                 dto.setBalance(dto.getTotalIncome() - totalOutcome);
+                // totalIncome을 double로 변환하여 나눗셈에서 소수점 이하까지 계산
+                if (dto.getTotalIncome() > 0) {
+                    dto.setBalalnceRate((double)(dto.getTotalIncome() - totalOutcome) / dto.getTotalIncome() * 100);
+                } else {
+                    dto.setBalalnceRate((double) 0); // totalIncome이 0일 경우 0으로 설정
+                }
             } else {
                 balanceMap.put(month,
-                        new MonthlyBalanceDTO(month, 0L, totalOutcome, totalOutcome));
+                        new MonthlyBalanceDTO(month, 0L, totalOutcome, totalOutcome,(double) 0));
             }
         }
 
@@ -460,15 +470,14 @@ public class FinanceServiceImpl implements FinanceService {
 
         // 4. 자산 카테고리별로 비교
         List<Map<String, Object>> assetComparisonList = new ArrayList<>();
-        addComparisonData("채권", userAssetSummary.getBond(), lowerBoundYear, upperBoundYear, assetComparisonList);
-        addComparisonData("예금", userAssetSummary.getDeposit(), lowerBoundYear, upperBoundYear, assetComparisonList);
-        addComparisonData("적금", userAssetSummary.getSaving(), lowerBoundYear, upperBoundYear, assetComparisonList);
-        addComparisonData("청약", userAssetSummary.getSubscription(), lowerBoundYear, upperBoundYear,
-                assetComparisonList);
-        addComparisonData("입출금", userAssetSummary.getWithdrawal(), lowerBoundYear, upperBoundYear, assetComparisonList);
-        addComparisonData("주식", userAssetSummary.getStock(), lowerBoundYear, upperBoundYear, assetComparisonList);
-        addComparisonData("현금", userAssetSummary.getCash(), lowerBoundYear, upperBoundYear, assetComparisonList);
-        addComparisonData("코인", userAssetSummary.getCoin(), lowerBoundYear, upperBoundYear, assetComparisonList);
+        addComparisonData("bond", userAssetSummary.getBond(), lowerBoundYear, upperBoundYear, assetComparisonList);
+        addComparisonData("deposit", userAssetSummary.getDeposit(), lowerBoundYear, upperBoundYear, assetComparisonList);
+        addComparisonData("saving", userAssetSummary.getSaving(), lowerBoundYear, upperBoundYear, assetComparisonList);
+        addComparisonData("subscription", userAssetSummary.getSubscription(), lowerBoundYear, upperBoundYear, assetComparisonList);
+        addComparisonData("withdrawal", userAssetSummary.getWithdrawal(), lowerBoundYear, upperBoundYear, assetComparisonList);
+        addComparisonData("stock", userAssetSummary.getStock(), lowerBoundYear, upperBoundYear, assetComparisonList);
+        addComparisonData("cash", userAssetSummary.getCash(), lowerBoundYear, upperBoundYear, assetComparisonList);
+        addComparisonData("coin", userAssetSummary.getCoin(), lowerBoundYear, upperBoundYear, assetComparisonList);
 
         return assetComparisonList;
     }
@@ -479,19 +488,20 @@ public class FinanceServiceImpl implements FinanceService {
             bsAmount = 0L;
         }
 
-        // 연령대의 평균 자산 구하기
-        Long avgAmount = assetSummaryRepository.findAverageAmountByAgeRange(lowerBoundYear, upperBoundYear);
+        // 연령대의 카테고리별 평균 자산 구하기
+        Long avgAmount = assetSummaryRepository.findAverageAmountByAgeRangeAndCategory(lowerBoundYear, upperBoundYear, category);
         Long deferAmount = bsAmount - avgAmount;
 
         // 각 카테고리별 결과값 추가
         Map<String, Object> comparisonData = new HashMap<>();
         comparisonData.put("bsAmount", bsAmount);
-        comparisonData.put("spotAvgAmount", avgAmount);
+        comparisonData.put("categoryAvgAmount", avgAmount);
         comparisonData.put("defer", deferAmount);
         comparisonData.put("category", category);
 
         assetComparisonList.add(comparisonData);
     }
+
     private Date getDateBeforeMonths(Date date, int months) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -510,7 +520,32 @@ public class FinanceServiceImpl implements FinanceService {
     public List<StockProduct> findStockProducts() {
         return stockProductRepository.findOrderByPriceDesc();
     }
+
+    public List<StockProduct> findStockProducts(int limit) {
+        Pageable pageable = PageRequest.of(0, limit); // 첫 번째 페이지부터 시작, 최대 'limit'만큼 가져옴
+        Page<StockProduct> stockProductPage = stockProductRepository.findStockProductsWithPaging(pageable);
+        return stockProductPage.getContent(); // 결과를 리스트로 변환
+    }
+
     public List<CoinProduct> findCoinProducts() {
         return coinRepository.findOrderByClosingPriceDesc();
     }
+
+    // AssetSummary업데이트 스케쥴러
+    @Scheduled(cron = "0 0 06 1 * ?") // 매월 1일 오전 6시에 실행
+    @Transactional
+    public void scheduleAssetSummaryUpdate() {
+        log.info("Starting scheduled asset summary update for all users");
+        memberRepository.findAll().forEach(member -> {
+            try {
+                assetSummaryRepository.insertOrUpdateAssetSummary(member.getUid());
+                //assetSummaryRepository.deleteDuplicateAssetSummary();
+                log.info("Updated asset summary for user: {}", member.getUid());
+            } catch (Exception e) {
+                log.error("Error updating asset summary for user: {}", member.getUid(), e);
+            }
+        });
+        log.info("Completed scheduled asset summary update for all users");
+    }
+
 }

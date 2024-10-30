@@ -58,4 +58,8 @@ public interface FinanceService {
 
     List<CoinProduct> findCoinProducts();
 
+    void scheduleAssetSummaryUpdate();
+
+    List<StockProduct> findStockProducts(int limit);
+
 }

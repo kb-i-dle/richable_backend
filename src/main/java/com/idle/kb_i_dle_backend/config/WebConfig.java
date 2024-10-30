@@ -1,6 +1,7 @@
 package com.idle.kb_i_dle_backend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.idle.kb_i_dle_backend.domain.member.util.ExecutionTimeAspect;
 import com.idle.kb_i_dle_backend.domain.member.util.JwtProcessor;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -21,6 +22,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @EnableWebMvc
@@ -30,6 +32,7 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 })
 @PropertySource("classpath:application.properties")
 @EnableAspectJAutoProxy
+@EnableScheduling // 스케쥴링 어노테이션
 public class WebConfig implements WebMvcConfigurer {
 
     public WebConfig() {
@@ -78,7 +81,7 @@ public class WebConfig implements WebMvcConfigurer {
         // CORS 정책 오류 해결
         registry.addMapping("/**")
                 .allowedOrigins("https://www.richable.site", "http://richable.site", "http://localhost:5173",
-                        "http://localhost:4173")  // 허용할 Origin
+                        "http://localhost:4173","https://richable-backend")  // 허용할 Origin
                 .allowedOriginPatterns("*")
                 .allowedMethods("*")
                 .allowedHeaders("*")
@@ -136,5 +139,10 @@ public class WebConfig implements WebMvcConfigurer {
         registry
                 .addResourceHandler("/" + dirName + "/**")
                 .addResourceLocations("file:/" + uploadPath + "/");
+    }
+
+    @Bean
+    public ExecutionTimeAspect executionTimeAspect() {
+        return new ExecutionTimeAspect();
     }
 }

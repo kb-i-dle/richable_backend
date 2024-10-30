@@ -73,7 +73,7 @@ public class IncomeServiceImpl implements IncomeService {
         Member tempMember = memberService.findMemberByUid(uid);
         Income savedIncome = incomeRepository.save(IncomeDTO.convertToEntity(tempMember, incomeDTO));
         assetSummaryRepository.insertOrUpdateAssetSummary(uid);
-
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
         return IncomeDTO.convertToDTO(savedIncome);
     }
 
@@ -101,6 +101,8 @@ public class IncomeServiceImpl implements IncomeService {
         isIncome.setMemo(incomeDTO.getMemo());
 
         Income savedIncome = incomeRepository.save(isIncome);
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
         return IncomeDTO.convertToDTO(savedIncome);
     }
 
@@ -119,6 +121,8 @@ public class IncomeServiceImpl implements IncomeService {
         }
 
         incomeRepository.deleteByIndex(index);  // income 삭제
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
 
         return index;
     }

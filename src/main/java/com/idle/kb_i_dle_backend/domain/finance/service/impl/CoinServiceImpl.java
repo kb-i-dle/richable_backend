@@ -3,6 +3,7 @@ package com.idle.kb_i_dle_backend.domain.finance.service.impl;
 import com.idle.kb_i_dle_backend.config.exception.CustomException;
 import com.idle.kb_i_dle_backend.domain.finance.dto.CoinDTO;
 import com.idle.kb_i_dle_backend.domain.finance.entity.Coin;
+import com.idle.kb_i_dle_backend.domain.finance.repository.AssetSummaryRepository;
 import com.idle.kb_i_dle_backend.domain.finance.repository.CoinRepository;
 import com.idle.kb_i_dle_backend.domain.finance.service.CoinService;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
@@ -22,6 +23,7 @@ public class CoinServiceImpl implements CoinService {
 
     private final MemberService memberService;
     private final CoinRepository coinRepository;
+    private final AssetSummaryRepository assetSummaryRepository;
 
     @Override
     public List<CoinDTO> getCoinList(Integer uid) throws Exception {
@@ -45,7 +47,8 @@ public class CoinServiceImpl implements CoinService {
     public CoinDTO addCoin(Integer uid, CoinDTO coinDTO) throws ParseException {
         Member member = memberService.findMemberByUid(uid);
         Coin savedCoin = coinRepository.save(CoinDTO.convertToEntity(member, coinDTO));
-
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
         return CoinDTO.convertToDTO(savedCoin);
     }
 
@@ -68,6 +71,8 @@ public class CoinServiceImpl implements CoinService {
         isCoin.setBalance(coinDTO.getBalance());
 
         Coin savedCoin = coinRepository.save(isCoin);
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
         return CoinDTO.convertToDTO(savedCoin);
     }
 
@@ -88,6 +93,8 @@ public class CoinServiceImpl implements CoinService {
         isCoin.setDeleteDate(new Date());
 
         Coin savedCoin = coinRepository.save(isCoin);
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
         return CoinDTO.convertToDTO(savedCoin);
     }
 }

@@ -37,8 +37,24 @@ public class MasterControrller {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    // 주식 가격 업데이트
+    @GetMapping("/update/stock/before")
+    public ResponseEntity<?> updateStockPricesBefore(HttpServletRequest request) {
+
+        try {
+            masterService.updateStockPricesBefore();
+            SuccessResponseDTO response = new SuccessResponseDTO(true, "stock price update complete");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error in getAvailableAsset: ", e);
+            ErrorResponseDTO response = new ErrorResponseDTO(
+                    "Failed to retrieve available assets: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 
     // 코인 가격 업데이트
+
     @GetMapping("/update/coin")
     public ResponseEntity<?> updateCoinPrice(HttpServletRequest request) {
 

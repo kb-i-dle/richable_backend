@@ -14,4 +14,5 @@ public class MonthlyBalanceDTO {
     private Long totalIncome;
     private Long totalOutcome;
     private Long balance;
+    private Double balalnceRate;
 }

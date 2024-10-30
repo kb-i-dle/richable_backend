@@ -4,5 +4,7 @@ public interface MasterService {
 
     void updateStockPrices();
 
+    void updateStockPricesBefore();
+
     void updateCoinPrices();
 }

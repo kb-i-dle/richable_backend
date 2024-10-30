@@ -1,6 +1,7 @@
 package com.idle.kb_i_dle_backend.domain.member.service.impl;
 
 import com.idle.kb_i_dle_backend.config.exception.CustomException;
+import com.idle.kb_i_dle_backend.domain.finance.repository.AssetSummaryRepository;
 import com.idle.kb_i_dle_backend.domain.member.dto.CustomUserDetails;
 import com.idle.kb_i_dle_backend.domain.member.dto.LoginDTO;
 import com.idle.kb_i_dle_backend.domain.member.dto.MemberDTO;
@@ -64,6 +65,7 @@ public class MemberServiceImpl implements MemberService {
     private final MemberApiService memberApiService;
     private final RestTemplate restTemplate;
     private final HttpServletRequest request;
+    private final AssetSummaryRepository assetSummaryRepository;
 
     @Value("${naver.client.id}")
     private String clientId;
@@ -92,6 +94,10 @@ public class MemberServiceImpl implements MemberService {
             String jwtToken = jwtProcessor.generateToken(userInfo.getId(), userInfo.getUid(), userInfo.getNickname(),
                     userInfo.getEmail());
 
+            // 자산 리포트 업데이트
+            assetSummaryRepository.insertOrUpdateAssetSummary(userInfo.getUid());
+            //assetSummaryRepository.deleteDuplicateAssetSummary();
+
             Map<String, Object> result = new HashMap<>();
             result.put("token", jwtToken);
             result.put("userInfo", userInfo);
@@ -108,37 +114,65 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Map<String, Object> initiateNaverLogin(HttpServletRequest request) {
-        String state = generateState();
-        HttpSession session = request.getSession();
-        session.setAttribute("naverState", state);
+    public Map initiateNaverLogin(HttpServletRequest request) {
+        String state = UUID.randomUUID().toString();
+        request.getSession().setAttribute("naverState", state);
 
-        String naverAuthUrl = "https://nid.naver.com/oauth2.0/authorize"
+        String authorizationUrl = "https://nid.naver.com/oauth2.0/authorize"
                 + "?response_type=code"
                 + "&client_id=" + clientId
                 + "&redirect_uri=" + redirectUri
                 + "&state=" + state;
+        log.info("initiateNaverLogin");
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("redirectUrl", naverAuthUrl);
-        result.put("state", state);
-        return result;
+        return Map.of("redirectUrl", authorizationUrl);
     }
 
     @Override
     public Map<String, Object> processNaverCallback(String code, String state) {
-        try {
-            // 1. 액세스 토큰 얻기
-            String accessToken = getNaverAccessToken(code, state);
+        // 1. 액세스 토큰 얻기
+        log.info("processNaverCallback");
+        String accessToken = getNaverAccessToken(code, state);
+        log.info("getNaverAccessToken");
+        // 2. 사용자 정보 얻기
+        Map<String, Object> userInfo = getNaverUserInfo(accessToken);
+        log.info("getNaverUserInfo");
+        // 3. 회원 정보 확인 및 처리
+        Map<String, Object> response = (Map<String, Object>) userInfo.get("response");
+        String naverEmail = (String) response.get("email");
+        String nickname = (String) response.get("nickname");
+        String birth_year = (String) response.get("birthyear");
+        char gender = response.get("gender").toString().charAt(0);
+        log.info("response check step");
+        Member member = memberRepository.findByEmail(naverEmail);
 
-            // 2. 사용자 정보 가져오기
-            JSONObject userProfile = getUserProfile(accessToken);
+        if (member == null) {
+            // 새 회원 등록 필요
+            member = createNaverMember(naverEmail, nickname,gender,birth_year);
+            CustomUserDetails userDetails = new CustomUserDetails(member);
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwtToken = jwtProcessor.generateToken(member.getId(), member.getUid(), member.getNickname(), member.getEmail());
 
-            // 3. 사용자 정보 처리 및 회원가입/로그인
-            return processNaverUser(userProfile);
-        } catch (Exception e) {
-            log.error("Error processing Naver callback", e);
-            throw new MemberException(ErrorCode.NAVER_LOGIN_FAILED, "Failed to process Naver login");
+            return Map.of(
+                    "isNewUser", false,
+                    "token", jwtToken,
+                    "userInfo", new MemberInfoDTO(member.getUid(), member.getId(), member.getEmail(), member.getNickname(), member.getAuth())
+            );
+        } else {
+            // 기존 회원 로그인 처리
+            CustomUserDetails userDetails = new CustomUserDetails(member);
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwtToken = jwtProcessor.generateToken(member.getId(), member.getUid(), member.getNickname(), member.getEmail());
+
+            return Map.of(
+                    "isNewUser", false,
+                    "token", jwtToken,
+                    "userInfo", new MemberInfoDTO(member.getUid(), member.getId(), member.getEmail(), member.getNickname(), member.getAuth())
+            );
         }
     }
 
@@ -167,74 +201,30 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-    private JSONObject getUserProfile(String accessToken) {
-        String profileUrl = "https://openapi.naver.com/v1/nid/me";
-
+    private Map getNaverUserInfo(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
+        headers.set("Authorization", "Bearer " + accessToken);
 
-        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
+        HttpEntity entity = new HttpEntity<>(headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(profileUrl, HttpMethod.GET, entity, String.class);
+        ResponseEntity response = restTemplate.exchange(
+                "https://openapi.naver.com/v1/nid/me", HttpMethod.GET, entity, Map.class);
+        log.error("response: "+ response.getBody()+ " / "+response);
 
-        if (response.getStatusCode() == HttpStatus.OK) {
-            return new JSONObject(response.getBody());
-        } else {
-            throw new MemberException(ErrorCode.NAVER_LOGIN_FAILED, "Failed to get user profile");
-        }
+        return (Map) response.getBody();
     }
 
-    private Map<String, Object> processNaverUser(JSONObject userProfile) {
-        JSONObject response = userProfile.getJSONObject("response");
-        String email = response.getString("email");
-        String nickname = response.getString("nickname");
-
-        Member member = memberRepository.findByEmail(email);
-        if (member == null) {
-            member = createNaverMember(email, nickname);
-        }
-
-        String token = jwtProcessor.generateToken(member.getId(), member.getUid(), member.getNickname(),
-                member.getEmail());
-// SecurityContextHolder에 인증 정보 저장
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                member.getId(), null, Arrays.asList(new SimpleGrantedAuthority(member.getAuth()))
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        // 세션에 토큰 저장
-        HttpSession session = request.getSession();
-        session.setAttribute("authToken", token);
-
-        // MemberDTO 생성
-        MemberDTO memberDTO = MemberDTO.builder()
-                .uid(member.getUid())
-                .id(member.getId())
-                .email(member.getEmail())
-                .nickname(member.getNickname())
-                .auth(member.getAuth())
-                // 필요한 다른 필드들도 추가
-                .build();
-
-        // 사용자 정보를 MemberInfoDTO로 변환
-        MemberInfoDTO userInfo = new MemberInfoDTO(member.getUid(), member.getId(),
-                member.getEmail(), member.getNickname(), member.getAuth());
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("token", token);
-        result.put("userInfo", userInfo);
-        return result;
-    }
-
-    private Member createNaverMember(String email, String nickname) {
+    private Member createNaverMember(String email, String nickname,char gender, String birth_year) {
         String id = email.split("@")[0];
         String password = UUID.randomUUID().toString();
 
         MemberJoinDTO memberJoinDTO = MemberJoinDTO.builder()
                 .id(id)
                 .password(password)
-                .email(email)
                 .nickname(nickname)
+                .gender(gender)
+                .email(email)
+                .birth_year(Integer.valueOf(birth_year))
                 .auth("ROLE_MEMBER")
                 .agreementInfo(true)
                 .agreementFinance(true)

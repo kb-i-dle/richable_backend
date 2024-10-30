@@ -3,6 +3,7 @@ package com.idle.kb_i_dle_backend.domain.finance.service.impl;
 import com.idle.kb_i_dle_backend.config.exception.CustomException;
 import com.idle.kb_i_dle_backend.domain.finance.dto.StockDTO;
 import com.idle.kb_i_dle_backend.domain.finance.entity.Stock;
+import com.idle.kb_i_dle_backend.domain.finance.repository.AssetSummaryRepository;
 import com.idle.kb_i_dle_backend.domain.finance.repository.StockRepository;
 import com.idle.kb_i_dle_backend.domain.finance.service.StockService;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
@@ -23,6 +24,7 @@ public class StockServiceImpl implements StockService {
 
     private final MemberService memberService;
     private final StockRepository stockRepository;
+    private final AssetSummaryRepository assetSummaryRepository;
 
     @Override
     public List<StockDTO> getStockList(Integer uid) throws Exception {
@@ -46,7 +48,8 @@ public class StockServiceImpl implements StockService {
     public StockDTO addStock(Integer uid, StockDTO stockDTO) throws ParseException {
         Member member = memberService.findMemberByUid(uid);
         Stock savedStock = stockRepository.save(StockDTO.convertToEntity(member, stockDTO));
-
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
         return StockDTO.convertToDTO(savedStock);
     }
 
@@ -68,6 +71,8 @@ public class StockServiceImpl implements StockService {
         isStock.setHldgQty(stockDTO.getHldgQty());
 
         Stock savedStock = stockRepository.save(isStock);
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
         return StockDTO.convertToDTO(savedStock);
     }
 
@@ -87,6 +92,8 @@ public class StockServiceImpl implements StockService {
         isStock.setDeleteDate(new Date());
 
         Stock savedStock = stockRepository.save(isStock);
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
         return StockDTO.convertToDTO(savedStock);
     }
 }

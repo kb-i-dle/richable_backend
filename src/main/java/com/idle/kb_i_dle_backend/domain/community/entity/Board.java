@@ -22,9 +22,10 @@ public class Board {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer index; // 내 DB가 Integer라서 Integer로 했지만, DB에서는 id값이 BigInt로 설정되어 있기 때문에 Long이 일반적.
-                        //     다만 key값이 작다면 Integer여도 됨.
-                        //     https://reasontaek.tistory.com/13 참고.
+    private Integer index;
+    // 내 DB가 Integer라서 Integer로 했지만, DB에서는 id값이 BigInt로 설정되어 있기 때문에 Long이 일반적.
+    //     다만 key값이 작다면 Integer여도 됨.
+    //     https://reasontaek.tistory.com/13 참고.
 
     @ManyToOne
     @JoinColumn(name = "uid")

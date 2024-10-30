@@ -23,6 +23,9 @@ public class IncomeDTO {
     private Long accountNum;
 
     public static IncomeDTO convertToDTO(Income income) {
+        if (income == null) {
+            return null;
+        }
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         return new IncomeDTO(income.getIndex(), income.getType(), dateFormat.format(income.getDate()), income.getAmount(), income.getDescript(), income.getMemo(), income.getAccountNum());
     }

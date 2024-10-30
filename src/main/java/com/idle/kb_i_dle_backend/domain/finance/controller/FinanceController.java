@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -167,9 +168,22 @@ public class FinanceController {
         return ResponseEntity.ok(response);
     }
 
+    //    @GetMapping("/product/stock")
+//    public ResponseEntity<SuccessResponseDTO> getStockProductList() {
+//        // 시작 시간 측정
+//        long startTime = System.currentTimeMillis();
+//        List<StockProduct> stockProducts = financeService.findStockProducts();
+//        // 종료 시간 측정
+//        long endTime = System.currentTimeMillis();
+//        // 소요 시간 계산
+//        long duration = endTime - startTime;
+//        System.out.println("findStockProducts() 수행 시간: " + duration + " ms");
+//        SuccessResponseDTO response = new SuccessResponseDTO(true, stockProducts);
+//        return ResponseEntity.ok(response);
+//    }
     @GetMapping("/product/stock")
-    public ResponseEntity<SuccessResponseDTO> getStockProductList() {
-        List<StockProduct> stockProducts = financeService.findStockProducts();
+    public ResponseEntity<SuccessResponseDTO> getStockProductList(@RequestParam(defaultValue = "200") int limit) {
+        List<StockProduct> stockProducts = financeService.findStockProducts(limit);
         SuccessResponseDTO response = new SuccessResponseDTO(true, stockProducts);
         return ResponseEntity.ok(response);
     }

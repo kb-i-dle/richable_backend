@@ -3,6 +3,7 @@ package com.idle.kb_i_dle_backend.domain.finance.service.impl;
 import com.idle.kb_i_dle_backend.config.exception.CustomException;
 import com.idle.kb_i_dle_backend.domain.finance.dto.BondDTO;
 import com.idle.kb_i_dle_backend.domain.finance.entity.Bond;
+import com.idle.kb_i_dle_backend.domain.finance.repository.AssetSummaryRepository;
 import com.idle.kb_i_dle_backend.domain.finance.repository.BondRepository;
 import com.idle.kb_i_dle_backend.domain.finance.service.BondService;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
@@ -22,6 +23,7 @@ public class BondServiceImpl implements BondService {
 
     private final MemberService memberService;
     private final BondRepository bondRepository;
+    private final AssetSummaryRepository assetSummaryRepository;;
 
     @Override
     public List<BondDTO> getBondList(Integer uid) throws Exception {
@@ -45,7 +47,8 @@ public class BondServiceImpl implements BondService {
     public BondDTO addBond(Integer uid, BondDTO bondDTO) throws ParseException {
         Member member = memberService.findMemberByUid(uid);
         Bond savedBond = bondRepository.save(BondDTO.convertToEntity(member, bondDTO));
-
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
         return BondDTO.convertToDTO(savedBond);
     }
 
@@ -67,6 +70,8 @@ public class BondServiceImpl implements BondService {
         isBond.setCnt(bondDTO.getCnt());
 
         Bond savedBond = bondRepository.save(isBond);
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
         return BondDTO.convertToDTO(savedBond);
     }
 
@@ -87,6 +92,8 @@ public class BondServiceImpl implements BondService {
         isBond.setDeleteDate(new Date());
 
         Bond savedBond = bondRepository.save(isBond);
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
         return BondDTO.convertToDTO(savedBond);
     }
 }
