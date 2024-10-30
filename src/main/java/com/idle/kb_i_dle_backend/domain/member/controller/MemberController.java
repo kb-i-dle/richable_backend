@@ -7,9 +7,11 @@ import com.idle.kb_i_dle_backend.domain.member.repository.MemberRepository;
 import com.idle.kb_i_dle_backend.domain.member.service.MemberService;
 import com.idle.kb_i_dle_backend.global.dto.ErrorResponseDTO;
 import com.idle.kb_i_dle_backend.global.dto.SuccessResponseDTO;
+
 import java.net.URI;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.PropertySource;
@@ -77,7 +79,7 @@ public class MemberController {
     @PostMapping("/register")
     public ResponseEntity<?> signup(@RequestBody MemberJoinDTO signupDTO) {
         String result = memberService.registerMember(signupDTO);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, result));
     }
 
     @GetMapping("/checkDupl/{id}")
@@ -93,20 +95,16 @@ public class MemberController {
     }
 
     @PostMapping("/agree/{id}")
-    public ResponseEntity<?> updateUserAgreement(
-            @PathVariable String id,
-            @RequestBody Map<String, Boolean> agreementData) {
+    public ResponseEntity<?> updateUserAgreement(@PathVariable String id, @RequestBody Map<String, Boolean> agreementData) {
         boolean result = memberService.updateUserAgreement(id, agreementData);
-        SuccessResponseDTO successResponse = new SuccessResponseDTO(true, result);
-        return ResponseEntity.ok(successResponse);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, result));
     }
 
     @PostMapping("/find/id")
     public ResponseEntity<?> findId(@RequestBody Map<String, String> payload) {
         Map<String, String> result = memberService.findIdByEmail(payload.get("email"));
         boolean isSuccess = !result.containsKey("error");
-        SuccessResponseDTO successResponse = new SuccessResponseDTO(isSuccess, result);
-        return ResponseEntity.ok(successResponse);
+        return ResponseEntity.ok(new SuccessResponseDTO(isSuccess, result));
     }
 
     @PostMapping("/find/id/auth")
@@ -125,8 +123,7 @@ public class MemberController {
     @PostMapping("/find/pw")
     public ResponseEntity<?> findPw(@RequestBody Map<String, String> payload) {
         String result = memberService.findPwByEmail(payload.get("email"));
-        SuccessResponseDTO successResponse = new SuccessResponseDTO(true, result);
-        return ResponseEntity.ok(successResponse);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, result));
     }
 
     @PostMapping("/find/pw/auth")
@@ -144,13 +141,7 @@ public class MemberController {
     @PostMapping("/set/pw")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> payload) {
         boolean result = memberService.resetPassword(payload.get("id"), payload.get("newPassword"));
-        if (result) {
-            SuccessResponseDTO successResponse = new SuccessResponseDTO(true, "비밀번호 재설정에 성공하였습니다.");
-            return ResponseEntity.ok(successResponse);
-        } else {
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO("비밀번호 재설정 중 오류가 발생했습니다.");
-            return ResponseEntity.badRequest().body(errorResponseDTO);
-        }
+        return ResponseEntity.ok(new SuccessResponseDTO(result, "비밀번호 재설정에 성공하였습니다."));
     }
 
     @GetMapping("/info")
@@ -161,8 +152,7 @@ public class MemberController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> updateMemberInfo(@RequestBody Map<String, Object> updatedMemberInfo,
-                                              HttpServletRequest request) {
+    public ResponseEntity<?> updateMemberInfo(@RequestBody Map<String, Object> updatedMemberInfo, HttpServletRequest request) {
         String token = request.getHeader("Authorization").replace("Bearer ", "");
         Map<String, Object> result = memberService.updateMemberInfo(updatedMemberInfo, token);
         return ResponseEntity.ok(new SuccessResponseDTO(true, result));
@@ -173,6 +163,4 @@ public class MemberController {
         boolean result = memberService.deleteMemberById(nickname);
         return ResponseEntity.ok(new SuccessResponseDTO(true, result));
     }
-
-
 }
