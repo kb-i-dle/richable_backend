@@ -11,15 +11,12 @@ import com.idle.kb_i_dle_backend.domain.member.entity.Member;
 import com.idle.kb_i_dle_backend.domain.member.entity.MemberAPI;
 import com.idle.kb_i_dle_backend.domain.member.exception.MemberException;
 import com.idle.kb_i_dle_backend.domain.member.repository.MemberRepository;
-import com.idle.kb_i_dle_backend.domain.member.service.EmailService;
 import com.idle.kb_i_dle_backend.domain.member.service.MemberApiService;
-import com.idle.kb_i_dle_backend.domain.member.service.MemberInfoService;
 import com.idle.kb_i_dle_backend.domain.member.service.MemberService;
 import com.idle.kb_i_dle_backend.domain.member.util.JwtProcessor;
 import com.idle.kb_i_dle_backend.global.codes.ErrorCode;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +24,7 @@ import java.util.Random;
 import java.util.UUID;
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -41,7 +38,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -58,10 +54,10 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    private final EmailServiceImpl emailServiceImpl;
     private final AuthenticationManager authenticationManager;
     private final JwtProcessor jwtProcessor;
-    private final MemberInfoService memberInfoService;
+    private final MemberInfoServiceImpl memberInfoService;
     private final MemberApiService memberApiService;
     private final RestTemplate restTemplate;
     private final HttpServletRequest request;
@@ -373,7 +369,7 @@ public class MemberServiceImpl implements MemberService {
         // 이메일 전송
         String subject = "Richable 인증 코드";
         String text = "귀하의 인증 코드는 " + verificationCode + " 입니다.";
-        emailService.sendSimpleMessage(email, subject, text);
+        emailServiceImpl.sendSimpleMessage(email, subject, text);
 
         return verificationCode;
     }
