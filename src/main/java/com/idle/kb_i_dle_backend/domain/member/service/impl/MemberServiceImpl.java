@@ -89,7 +89,6 @@ public class MemberServiceImpl implements MemberService {
 
             // 자산 리포트 업데이트
             assetSummaryRepository.insertOrUpdateAssetSummary(userInfo.getUid());
-            //assetSummaryRepository.deleteDuplicateAssetSummary();
 
             Map<String, Object> result = new HashMap<>();
             result.put("token", jwtToken);
@@ -107,18 +106,23 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Map initiateNaverLogin(HttpServletRequest request) {
-        String state = UUID.randomUUID().toString();
-        request.getSession().setAttribute("naverState", state);
+    public Map<String, Object> initiateNaverLogin(HttpServletRequest request) {
+        try {
+            String state = UUID.randomUUID().toString();
+            request.getSession().setAttribute("naverState", state);
 
-        String authorizationUrl = "https://nid.naver.com/oauth2.0/authorize"
-                + "?response_type=code"
-                + "&client_id=" + clientId
-                + "&redirect_uri=" + redirectUri
-                + "&state=" + state;
-        log.info("initiateNaverLogin");
+            String authorizationUrl = "https://nid.naver.com/oauth2.0/authorize"
+                    + "?response_type=code"
+                    + "&client_id=" + clientId
+                    + "&redirect_uri=" + redirectUri
+                    + "&state=" + state;
+            log.info("initiateNaverLogin");
 
-        return Map.of("redirectUrl", authorizationUrl);
+            return Map.of("redirectUrl", authorizationUrl);
+        } catch (Exception e) {
+            log.error("Failed to initiate Naver login", e);
+            return Map.of("error", "네이버 로그인 초기화 중 오류가 발생했습니다.");
+        }
     }
 
     @Override
@@ -242,8 +246,19 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public boolean checkDupl(String id) {
-        return memberRepository.existsById(id);
+    public Map<String, Object> checkDupl(String id) {
+        boolean exists = memberRepository.existsById(id);
+        Map<String, Object> result = new HashMap<>();
+
+        if (!exists) {
+            result.put("available", true);
+            result.put("message", "사용 가능한 ID입니다");
+        } else {
+            result.put("available", false);
+            result.put("message", "중복된 ID입니다");
+        }
+
+        return result;
     }
 
     @Override

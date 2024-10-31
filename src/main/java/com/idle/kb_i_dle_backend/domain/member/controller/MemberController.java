@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class MemberController {
 
     private final MemberService memberService;
-    private final MemberRepository memberRepository;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
@@ -47,34 +46,19 @@ public class MemberController {
 
     @GetMapping("/naverlogin")
     public ResponseEntity<SuccessResponseDTO> naverlogin(HttpServletRequest request) {
-        try {
-            Map<String, Object> naverLoginResult = memberService.initiateNaverLogin(request);
-            log.error("result check for social login : " + naverLoginResult);
-            return ResponseEntity.ok(new SuccessResponseDTO(true, naverLoginResult));
-        } catch (Exception e) {
-            log.error("Failed to initiate Naver login", e);
-            String result = "네이버 로그인 초기화 중 오류가 발생했습니다.";
-            return (ResponseEntity<SuccessResponseDTO>) ResponseEntity.internalServerError();
-        }
+        Map<String, Object> naverLoginResult = memberService.initiateNaverLogin(request);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, naverLoginResult));
     }
 
     @GetMapping("/navercallback")
     public ResponseEntity<?> naverCallback(@RequestParam("code") String code, @RequestParam("state") String state) {
-        try {
             Map<String, Object> callbackResult = memberService.processNaverCallback(code, state);
             String token = (String) callbackResult.get("token");
             String frontendUrl = "https://www.richable.site";  // 프론트엔드 URL
             String redirectUrl = frontendUrl + "/auth/naver/callback?token=" + token;
-
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(URI.create(redirectUrl));
-
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
-        } catch (Exception e) {
-            log.error("Failed to process Naver callback", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponseDTO("네이버 로그인 처리 중 오류가 발생했습니다: " + e.getMessage()));
-        }
     }
 
     @PostMapping("/register")
@@ -85,14 +69,8 @@ public class MemberController {
 
     @GetMapping("/checkDupl/{id}")
     public ResponseEntity<?> checkDuplicateUsername(@PathVariable String id) {
-        boolean result = memberService.checkDupl(id);
-        if (result == true) {
-            SuccessResponseDTO successResponse = new SuccessResponseDTO(true, result);
-            return ResponseEntity.ok(successResponse);
-        } else {
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO("중복된 ID");
-            return ResponseEntity.ok(errorResponseDTO);
-        }
+        Map<String, Object> result = memberService.checkDupl(id);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, result));
     }
 
     @PostMapping("/agree/{id}")

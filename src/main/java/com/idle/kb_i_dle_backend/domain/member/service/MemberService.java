@@ -9,7 +9,7 @@ public interface MemberService {
 
     Map<String, Object> login(LoginDTO loginDTO);
 
-    Map initiateNaverLogin(HttpServletRequest request);
+    Map<String, Object> initiateNaverLogin(HttpServletRequest request);
 
     Map processNaverCallback(String code, String state);
 
@@ -17,7 +17,7 @@ public interface MemberService {
 
     boolean updateUserAgreement(String id, Map<String, Boolean> agreementData);
 
-    boolean checkDupl(String id);
+    Map<String, Object> checkDupl(String id);
 
     Member findMemberByUid(int id);
 

@@ -146,17 +146,33 @@ class MemberServiceImplTest {
     }
 
     @Test
-    @DisplayName("ID 중복 확인 시 존재하는 ID는 true를 반환한다")
+    @DisplayName("ID 중복 확인 시 존재하는 ID는 사용 불가능 응답을 반환한다")
     @Transactional
-    void checkDupl_True() {
+    void checkDupl_ExistingId() {
         // given
         given(memberRepository.existsById("testId")).willReturn(true);
 
         // when
-        boolean result = memberService.checkDupl("testId");
+        Map<String, Object> result = memberService.checkDupl("testId");
 
         // then
-        assertThat(result).isTrue();
+        assertThat(result).containsEntry("available", false);
+        assertThat(result).containsEntry("message", "중복된 ID입니다");
+    }
+
+    @Test
+    @DisplayName("ID 중복 확인 시 존재하지 않는 ID는 사용 가능 응답을 반환한다")
+    @Transactional
+    void checkDupl_NonExistingId() {
+        // given
+        given(memberRepository.existsById("testId")).willReturn(false);
+
+        // when
+        Map<String, Object> result = memberService.checkDupl("testId");
+
+        // then
+        assertThat(result).containsEntry("available", true);
+        assertThat(result).containsEntry("message", "사용 가능한 ID입니다");
     }
 
     @Test
