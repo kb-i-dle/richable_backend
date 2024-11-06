@@ -7,12 +7,14 @@ import lombok.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Date;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class IncomeDTO {
     private Integer incomeId;
     private String type;
