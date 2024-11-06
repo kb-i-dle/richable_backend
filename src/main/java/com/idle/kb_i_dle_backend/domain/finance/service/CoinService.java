@@ -5,11 +5,11 @@ import java.text.ParseException;
 import java.util.List;
 
 public interface CoinService {
-    List<CoinDTO> getCoinList(Integer uid) throws Exception;
+    List<CoinDTO> getCoinList(Integer uid);
 
     CoinDTO addCoin(Integer uid, CoinDTO coinDTO) throws ParseException;
 
-    CoinDTO updateCoin(Integer uid, CoinDTO coinDTO) throws ParseException;
+    CoinDTO updateCoin(Integer uid, CoinDTO coinDTO);
 
-    CoinDTO deleteCoin(Integer uid, Integer index) throws ParseException;
+    CoinDTO deleteCoin(Integer uid, Integer index);
 }

@@ -35,6 +35,7 @@ class IncomeServiceImplTest {
 
     @InjectMocks
     private IncomeServiceImpl incomeService;
+
     @Test
     void addIncome() throws ParseException {
         // Given

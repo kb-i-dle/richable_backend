@@ -26,7 +26,7 @@ public class BondServiceImpl implements BondService {
     private final AssetSummaryRepository assetSummaryRepository;;
 
     @Override
-    public List<BondDTO> getBondList(Integer uid) throws Exception {
+    public List<BondDTO> getBondList(Integer uid) {
         Member member = memberService.findMemberByUid(uid);
         List<Bond> bonds = bondRepository.findByUidAndDeleteDateIsNull(member);
 
