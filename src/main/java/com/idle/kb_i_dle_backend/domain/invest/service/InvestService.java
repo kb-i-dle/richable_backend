@@ -9,19 +9,19 @@ import java.util.Optional;
 public interface InvestService {
     List<InvestDTO> getInvestList(int uid) throws  Exception;
 
-    AvailableCashDTO getAvailableCash(int uid) throws Exception;
+    AvailableCashDTO getAvailableCash(int uid);
 
     List<CategorySumDTO> getInvestmentTendency(int uid) throws Exception;
 
     long totalAsset(int uid) throws Exception;
 
-    MaxPercentageCategoryDTO getMaxPercentageCategory(int uid) throws Exception;
+    MaxPercentageCategoryDTO getMaxPercentageCategory(int uid);
 
-    List<RecommendedProductDTO> getRecommendedProducts(int uid) throws Exception;
+    List<RecommendedProductDTO> getRecommendedProducts(int uid);
 
-    List<HighReturnProductDTO> getHighReturnStock(int uid) throws Exception;
+    List<HighReturnProductDTO> getHighReturnStock(int uid);
 
-    List<HighReturnProductDTO> getHighReturnCoin(int uid) throws Exception;
+    List<HighReturnProductDTO> getHighReturnCoin(int uid);
 
-    HighReturnProductsDTO getHighReturnProducts(int uid) throws Exception;
+    HighReturnProductsDTO getHighReturnProducts(int uid);
 }
