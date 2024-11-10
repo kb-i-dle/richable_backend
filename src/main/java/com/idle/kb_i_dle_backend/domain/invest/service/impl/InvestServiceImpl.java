@@ -46,7 +46,6 @@ public class InvestServiceImpl implements InvestService {
     private final MemberRepository memberRepository;
 
 
-    //user의 전체 재산을 investDTO에 넣음
     @Override
     public List<InvestDTO> getInvestList(int uid) throws Exception {
         Member member = memberService.findMemberByUid(uid);
@@ -64,7 +63,6 @@ public class InvestServiceImpl implements InvestService {
         return investDTOs;
     }
 
-    //user의 전체 재산의 합을 구함.
     @Override
     public long totalAsset(int uid) throws Exception {
         Member member = memberService.findMemberByUid(uid);
@@ -74,7 +72,6 @@ public class InvestServiceImpl implements InvestService {
                 .sum();
     }
 
-    //user의 전체 투자자산 중 가장 높은 비중을 차지하는 카테고리를 구함.
     @Override
     public MaxPercentageCategoryDTO getMaxPercentageCategory(int uid) {
         Member member = memberRepository.findByUid(uid);
@@ -109,7 +106,6 @@ public class InvestServiceImpl implements InvestService {
             throw new CustomException(ErrorCode.NO_AVAILABLE_CASH, "여유자금을 찾을 수 없습니다.");
         }
         else{
-            // 여유 자산과 전체 자산 계산 및 예외 처리
             Long totalAvailableCash = banks.stream()
                     .mapToLong(Bank::getBalanceAmt)
                     .sum();
@@ -118,7 +114,6 @@ public class InvestServiceImpl implements InvestService {
             try {
                 totalAsset = totalAsset(uid);
             } catch (Exception e) {
-                // totalAsset 메서드에서 예외 발생 시 CustomException 던지기
                 throw new CustomException(ErrorCode.NO_ASSETS_FOUND, "전체 자산을 계산하는 중 오류가 발생했습니다.");
             }
 
@@ -127,8 +122,6 @@ public class InvestServiceImpl implements InvestService {
     }
 
 
-
-    //각 재산의 합과 비중을 보내줌.
     @Override
     public List<CategorySumDTO> getInvestmentTendency(int uid) throws Exception {
         Member member = memberService.findMemberByUid(uid);
@@ -150,7 +143,7 @@ public class InvestServiceImpl implements InvestService {
                 .collect(Collectors.toList());
     }
 
-    //추천 상품 5개 짤라서 보냄.
+
     @Override
     public List<RecommendedProductDTO> getRecommendedProducts(int uid){
         MaxPercentageCategoryDTO maxCategory = getMaxPercentageCategory(uid);
@@ -247,7 +240,7 @@ public class InvestServiceImpl implements InvestService {
                     .collect(Collectors.toList());
         }
     }
-
+    
     @Override
     public HighReturnProductsDTO getHighReturnProducts(int uid) {
         CompletableFuture<List<HighReturnProductDTO>> stocksFuture = CompletableFuture.supplyAsync(() -> {
@@ -266,7 +259,6 @@ public class InvestServiceImpl implements InvestService {
             return coins;
         });
 
-        // CompletableFuture를 통해 결과를 기다리고 각 리스트를 가져옴
         stocksFuture.join();
         coinsFuture.join();
 
@@ -276,7 +268,6 @@ public class InvestServiceImpl implements InvestService {
         List<HighReturnProductDTO> allProducts = new ArrayList<>(stocks);
         allProducts.addAll(coins);
 
-        // allProducts가 비어 있을 경우 예외 발생
         if (allProducts.isEmpty()) {
             throw new CustomException(ErrorCode.NO_HIGH_RETURN_PRODUCTS, "수익률 높은 자산을 찾을 수 없습니다.");
         } else {
