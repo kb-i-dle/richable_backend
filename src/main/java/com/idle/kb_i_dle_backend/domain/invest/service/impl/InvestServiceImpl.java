@@ -240,7 +240,7 @@ public class InvestServiceImpl implements InvestService {
                     .collect(Collectors.toList());
         }
     }
-    
+
     @Override
     public HighReturnProductsDTO getHighReturnProducts(int uid) {
         CompletableFuture<List<HighReturnProductDTO>> stocksFuture = CompletableFuture.supplyAsync(() -> {
