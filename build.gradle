@@ -105,6 +105,8 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.22'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
+    testImplementation 'org.mockito:mockito-inline:4.5.1'
+
     // JavaMail API
     implementation 'org.springframework:spring-context-support:5.3.29'  // Spring context support
     implementation 'javax.mail:javax.mail-api:1.6.2'
