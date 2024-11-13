@@ -9,5 +9,4 @@ public interface MemberInfoService {
 
     MemberInfoDTO updateMemberInfo(MemberInfoDTO updatedUserInfo) throws Exception;
 
-    MemberAPI getMemberApiByUid(Integer uid);
 }

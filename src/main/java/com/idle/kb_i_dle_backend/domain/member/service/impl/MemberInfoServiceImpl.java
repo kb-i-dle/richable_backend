@@ -4,8 +4,10 @@ import com.idle.kb_i_dle_backend.domain.member.dto.MemberApiDTO;
 import com.idle.kb_i_dle_backend.domain.member.dto.MemberInfoDTO;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
 import com.idle.kb_i_dle_backend.domain.member.entity.MemberAPI;
+import com.idle.kb_i_dle_backend.domain.member.exception.MemberException;
 import com.idle.kb_i_dle_backend.domain.member.repository.MemberRepository;
 import com.idle.kb_i_dle_backend.domain.member.service.MemberInfoService;
+import com.idle.kb_i_dle_backend.global.codes.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +19,13 @@ public class MemberInfoServiceImpl implements MemberInfoService {
 
     // 기존 사용자의 정보를 가져오는 메서드
     public MemberInfoDTO getUserInfoByNickname(String nickname) {
+        if (nickname == null || nickname.trim().isEmpty()) {
+            throw new MemberException(ErrorCode.INVALID_INPUT, "Nickname cannot be null or empty");
+        }
         Member member = memberRepository.findByNickname(nickname);
+        if (member == null) {
+            throw new MemberException(ErrorCode.MEMBER_NOT_FOUND, "Member not found with nickname: " + nickname);
+        }
 
         if (member != null) {
             // UserApiEntity -> UserApiDTO 변환
@@ -57,11 +65,18 @@ public class MemberInfoServiceImpl implements MemberInfoService {
 
     // 사용자 정보를 업데이트하는 메서드 추가
     public MemberInfoDTO updateMemberInfo(MemberInfoDTO updatedUserInfo) throws Exception {
+        if (updatedUserInfo == null) {
+            throw new MemberException(ErrorCode.INVALID_INPUT, "Updated user info cannot be null");
+        }
+
+        if (updatedUserInfo.getNickname() == null || updatedUserInfo.getNickname().trim().isEmpty()) {
+            throw new MemberException(ErrorCode.INVALID_INPUT, "Nickname cannot be null or empty");
+        }
         // 닉네임을 사용하여 사용자 찾기
         Member member = memberRepository.findByNickname(updatedUserInfo.getNickname());
 
         if (member == null) {
-            throw new Exception("사용자를 찾을 수 없습니다.");
+            throw new MemberException(ErrorCode.MEMBER_NOT_FOUND, "Member not found with nickname: " + updatedUserInfo.getNickname());
         }
 
         // UserInfoDTO의 정보를 User 엔티티에 반영
@@ -86,9 +101,5 @@ public class MemberInfoServiceImpl implements MemberInfoService {
                 Boolean.TRUE.equals(member.getIsCertification()),
                 null  // 변환된 UserApiDTO 포함
         );
-    }
-
-    public MemberAPI getMemberApiByUid(Integer uid) {
-        return null;
     }
 }
