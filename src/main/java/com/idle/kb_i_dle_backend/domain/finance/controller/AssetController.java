@@ -52,60 +52,52 @@ public class AssetController {
         };
     }
 
+    // Asset 추가
     @PostMapping("/{category}/add")
     public ResponseEntity<?> addAsset(@PathVariable("category") String category, @RequestBody String reqBody) {
         Integer uid = memberService.getCurrentUid();
-        try {
-            switch (category) {
-                case "bank" -> {
-                    BankDTO bankData = new ObjectMapper().readValue(reqBody, BankDTO.class);
-                    return ResponseEntity.ok(new SuccessResponseDTO(true, bankService.addBank(uid, bankData)));
-                }
-                case "bond" -> {
-                    BondDTO bondData = new ObjectMapper().readValue(reqBody, BondDTO.class);
-                    return ResponseEntity.ok(new SuccessResponseDTO(true, bondService.addBond(uid, bondData)));
-                }
-                case "coin" -> {
-                    CoinDTO coinData = new ObjectMapper().readValue(reqBody, CoinDTO.class);
-                    return ResponseEntity.ok(new SuccessResponseDTO(true, coinService.addCoin(uid, coinData)));
-                }
-                default -> {
-                    StockDTO stockData = new ObjectMapper().readValue(reqBody, StockDTO.class);
-                    return ResponseEntity.ok(new SuccessResponseDTO(true, stockService.addStock(uid, stockData)));
-                }
+        switch (category) {
+            case "bank" -> {
+                BankDTO bankData = convertToDTO(reqBody, BankDTO.class);
+                return ResponseEntity.ok(new SuccessResponseDTO(true, bankService.addBank(uid, bankData)));
             }
-        } catch (Exception e) {
-            ErrorResponseDTO response = new ErrorResponseDTO(e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            case "bond" -> {
+                BondDTO bondData = convertToDTO(reqBody, BondDTO.class);
+                return ResponseEntity.ok(new SuccessResponseDTO(true, bondService.addBond(uid, bondData)));
+            }
+            case "coin" -> {
+                CoinDTO coinData = convertToDTO(reqBody, CoinDTO.class);
+                return ResponseEntity.ok(new SuccessResponseDTO(true, coinService.addCoin(uid, coinData)));
+            }
+            default -> {
+                StockDTO stockData = convertToDTO(reqBody, StockDTO.class);
+                return ResponseEntity.ok(new SuccessResponseDTO(true, stockService.addStock(uid, stockData)));
+            }
         }
     }
+
 
     // Asset 수정
     @PutMapping("/{category}/update")
     public ResponseEntity<?> updateAsset(@PathVariable("category") String category, @RequestBody String reqBody) {
         Integer uid = memberService.getCurrentUid();
-        try {
-            switch (category) {
-                case "bank" -> {
-                    BankDTO bankData = new ObjectMapper().readValue(reqBody, BankDTO.class);
-                    return ResponseEntity.ok(new SuccessResponseDTO(true, bankService.updateBank(uid, bankData)));
-                }
-                case "bond" -> {
-                    BondDTO bondData = new ObjectMapper().readValue(reqBody, BondDTO.class);
-                    return ResponseEntity.ok(new SuccessResponseDTO(true, bondService.updateBond(uid, bondData)));
-                }
-                case "coin" -> {
-                    CoinDTO coinData = new ObjectMapper().readValue(reqBody, CoinDTO.class);
-                    return ResponseEntity.ok(new SuccessResponseDTO(true, coinService.updateCoin(uid, coinData)));
-                }
-                default -> {
-                    StockDTO stockData = new ObjectMapper().readValue(reqBody, StockDTO.class);
-                    return ResponseEntity.ok(new SuccessResponseDTO(true, stockService.updateStock(uid, stockData)));
-                }
+        switch (category) {
+            case "bank" -> {
+                BankDTO bankData = convertToDTO(reqBody, BankDTO.class);
+                return ResponseEntity.ok(new SuccessResponseDTO(true, bankService.updateBank(uid, bankData)));
             }
-        } catch (Exception e) {
-            ErrorResponseDTO response = new ErrorResponseDTO(e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            case "bond" -> {
+                BondDTO bondData = convertToDTO(reqBody, BondDTO.class);
+                return ResponseEntity.ok(new SuccessResponseDTO(true, bondService.updateBond(uid, bondData)));
+            }
+            case "coin" -> {
+                CoinDTO coinData = convertToDTO(reqBody, CoinDTO.class);
+                return ResponseEntity.ok(new SuccessResponseDTO(true, coinService.updateCoin(uid, coinData)));
+            }
+            default -> {
+                StockDTO stockData = convertToDTO(reqBody, StockDTO.class);
+                return ResponseEntity.ok(new SuccessResponseDTO(true, stockService.updateStock(uid, stockData)));
+            }
         }
     }
 
@@ -145,4 +137,14 @@ public class AssetController {
         accountData.put("account", bankService.getAccount(uid));
         return ResponseEntity.ok(new SuccessResponseDTO(true, accountData));
     }
+
+    private <T> T convertToDTO(String reqBody, Class<T> dtoClass) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.readValue(reqBody, dtoClass);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Invalid JSON format: " + e.getMessage(), e);
+        }
+    }
+
 }

@@ -7,7 +7,7 @@ import java.util.List;
 public interface StockService {
     List<StockDTO> getStockList(Integer uid);
 
-    StockDTO addStock(Integer uid, StockDTO stockDTO) throws ParseException;
+    StockDTO addStock(Integer uid, StockDTO stockDTO);
 
     StockDTO updateStock(Integer uid, StockDTO stockDTO);
 

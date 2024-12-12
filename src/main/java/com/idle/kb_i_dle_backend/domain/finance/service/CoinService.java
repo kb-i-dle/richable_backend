@@ -7,7 +7,7 @@ import java.util.List;
 public interface CoinService {
     List<CoinDTO> getCoinList(Integer uid);
 
-    CoinDTO addCoin(Integer uid, CoinDTO coinDTO) throws ParseException;
+    CoinDTO addCoin(Integer uid, CoinDTO coinDTO);
 
     CoinDTO updateCoin(Integer uid, CoinDTO coinDTO);
 
