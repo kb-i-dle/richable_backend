@@ -27,12 +27,12 @@ public class StockServiceImpl implements StockService {
     private final AssetSummaryRepository assetSummaryRepository;
 
     @Override
-    public List<StockDTO> getStockList(Integer uid) throws Exception {
+    public List<StockDTO> getStockList(Integer uid) {
         Member member = memberService.findMemberByUid(uid);
         List<Stock> stocks = stockRepository.findByUidAndDeleteDateIsNull(member);
 
         if (stocks.isEmpty()) {
-            throw new NotFoundException("");
+            throw new CustomException(ErrorCode.INVALID_STOCK, "user dont have stocks");
         }
 
         List<StockDTO> stockList = new ArrayList<>();
@@ -55,7 +55,7 @@ public class StockServiceImpl implements StockService {
 
     @Transactional
     @Override
-    public StockDTO updateStock(Integer uid, StockDTO stockDTO) throws ParseException {
+    public StockDTO updateStock(Integer uid, StockDTO stockDTO) {
         Member member = memberService.findMemberByUid(uid);
 
         // Stock 조회
@@ -78,7 +78,7 @@ public class StockServiceImpl implements StockService {
 
     @Transactional
     @Override
-    public StockDTO deleteStock(Integer uid, Integer index) throws ParseException {
+    public StockDTO deleteStock(Integer uid, Integer index) {
         Member member = memberService.findMemberByUid(uid);
 
         // Stock 조회
