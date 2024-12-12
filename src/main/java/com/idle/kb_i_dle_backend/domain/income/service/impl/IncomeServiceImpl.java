@@ -25,21 +25,25 @@ public class IncomeServiceImpl implements IncomeService {
     private final IncomeRepository incomeRepository;
     private final AssetSummaryRepository assetSummaryRepository;
 
+    private void validateOwnership(Member incomeOwner, Member requestUser) {
+        if (!incomeOwner.getUid().equals(requestUser.getUid())) {
+            throw new CustomException(ErrorCode.INVALID_OWNER, "You do not have permission to access this income.");
+        }
+    }
+
     @Override
-    public List<IncomeDTO> getIncomeList(Integer uid) throws Exception {
+    public List<IncomeDTO> getIncomeList(Integer uid) {
         Member tempMember = memberService.findMemberByUid(uid);
         List<Income> incomes = incomeRepository.findByUid(tempMember);
 
         if (incomes.isEmpty()) {
-            throw new CustomException(ErrorCode.INVALID_INCOME);
+            throw new CustomException(ErrorCode.NO_INCOME_DATA, "소득 데이터를 찾을 수 없습니다.");
         }
 
         List<IncomeDTO> incomeList = new ArrayList<>();
         for (Income i : incomes) {
-            IncomeDTO incomeDTO = IncomeDTO.convertToDTO(i);
-            incomeList.add(incomeDTO);
+            incomeList.add(IncomeDTO.convertToDTO(i));
         }
-
         return incomeList;
     }
 
@@ -47,82 +51,84 @@ public class IncomeServiceImpl implements IncomeService {
     public long getIncomeSumInMonth(Integer uid, int year, int month) {
         Member tempUser = memberService.findMemberByUid(uid);
         List<Income> incomes = incomeRepository.findByUidAndYearAndMonth(tempUser, year, month);
-        Long sumOfIncomes = incomes.stream().mapToLong(Income::getAmount).sum();
 
-        return sumOfIncomes;
+        if (incomes.isEmpty()) {
+            throw new CustomException(ErrorCode.NO_INCOME_DATA, "지정된 월에 대한 소득 데이터가 없습니다.");
+        }
+
+        return incomes.stream().mapToLong(Income::getAmount).sum();
     }
-
 
     @Override
     public IncomeDTO getIncomeByIndex(Integer uid, Integer index) {
         Member tempMember = memberService.findMemberByUid(uid);
         Income isIncome = incomeRepository.findByIndex(index)
-                .orElseThrow(
-                        () -> new CustomException(ErrorCode.INVALID_INCOME, "Income not found with index: " + index));
+                .orElseThrow(() -> new CustomException(ErrorCode.NO_INCOME_DATA, "지정된 인덱스로 소득 데이터를 찾을 수 없습니다: " + index));
 
-        // 유저가 소유한 income인지 확인
-        if (!isIncome.getUid().getUid().equals(tempMember.getUid())) {
-            throw new CustomException(ErrorCode.INVALID_OWNER, "You do not have permission to delete this income.");
-        }
-
+        validateOwnership(isIncome.getUid(), tempMember);
         return IncomeDTO.convertToDTO(isIncome);
     }
 
     @Override
-    public IncomeDTO addIncome(Integer uid, IncomeDTO incomeDTO) throws ParseException {
-        Member tempMember = memberService.findMemberByUid(uid);
-        Income savedIncome = incomeRepository.save(IncomeDTO.convertToEntity(tempMember, incomeDTO));
-        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
-        //assetSummaryRepository.deleteDuplicateAssetSummary();
-        return IncomeDTO.convertToDTO(savedIncome);
+    public IncomeDTO addIncome(Integer uid, IncomeDTO incomeDTO) {
+        try {
+            Member tempMember = memberService.findMemberByUid(uid);
+            Income incomeEntity = IncomeDTO.convertToEntity(tempMember, incomeDTO);
+            Income savedIncome = incomeRepository.save(incomeEntity);
+            assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+
+            return IncomeDTO.convertToDTO(savedIncome);
+        } catch (ParseException e) {
+            throw new CustomException(ErrorCode.INCOME_PARSE_ERROR, "소득 날짜를 분석하지 못했습니다.", e);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INCOME_CREATION_FAILED, "소득을 추가하지 못했습니다.", e);
+        }
     }
 
     @Transactional
     @Override
-    public IncomeDTO updateIncome(Integer uid, IncomeDTO incomeDTO) throws ParseException {
+    public IncomeDTO updateIncome(Integer uid, IncomeDTO incomeDTO) {
         Member member = memberService.findMemberByUid(uid);
+        Income existingIncome = incomeRepository.findByIndex(incomeDTO.getIncomeId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NO_INCOME_DATA, "ID로 소득을 찾을수 없습니다.: " + incomeDTO.getIncomeId()));
 
-        // Income 조회
-        Income isIncome = incomeRepository.findByIndex(incomeDTO.getIncomeId())
-                .orElseThrow(
-                        () -> new CustomException(ErrorCode.INVALID_INCOME,
-                                "Income not found with id: " + incomeDTO.getIncomeId()));
+        validateOwnership(existingIncome.getUid(), member);
 
-        // income의 소유자가 해당 User인지 확인
-        if (!isIncome.getUid().equals(member)) {
-            throw new CustomException(ErrorCode.INVALID_OWNER, "You do not have permission to modify this income.");
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            existingIncome.setDate(dateFormat.parse(incomeDTO.getIncomeDate()));
+        } catch (ParseException e) {
+            throw new CustomException(ErrorCode.INCOME_PARSE_ERROR, "소득 날짜를 분석하지 못했습니다.", e);
         }
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        isIncome.setType(incomeDTO.getType());
-        isIncome.setDate(dateFormat.parse(incomeDTO.getIncomeDate()));
-        isIncome.setAmount(incomeDTO.getPrice());
-        isIncome.setDescript(incomeDTO.getContents());
-        isIncome.setMemo(incomeDTO.getMemo());
+        existingIncome.setType(incomeDTO.getType());
+        existingIncome.setAmount(incomeDTO.getPrice());
+        existingIncome.setDescript(incomeDTO.getContents());
+        existingIncome.setMemo(incomeDTO.getMemo());
 
-        Income savedIncome = incomeRepository.save(isIncome);
+        Income savedIncome = incomeRepository.save(existingIncome);
+        if (savedIncome == null) {
+            throw new CustomException(ErrorCode.INCOME_UPDATE_FAILED, "소득 수정을 실패했습니다.");
+        }
         assetSummaryRepository.insertOrUpdateAssetSummary(uid);
-        //assetSummaryRepository.deleteDuplicateAssetSummary();
         return IncomeDTO.convertToDTO(savedIncome);
     }
 
-    // 특정 유저와 index에 해당하는 소득 삭제
     @Transactional
     @Override
     public Integer deleteIncomeByUidAndIndex(Integer uid, Integer index) {
         Member tempMember = memberService.findMemberByUid(uid);
         Income isIncome = incomeRepository.findByIndex(index)
-                .orElseThrow(
-                        () -> new CustomException(ErrorCode.INVALID_INCOME, "Income not found with index: " + index));
+                .orElseThrow(() -> new CustomException(ErrorCode.NO_INCOME_DATA, "인덱스에서 소득을 찾을수 없습니다.: " + index));
 
-        // 유저가 소유한 소득인지 확인
-        if (!isIncome.getUid().getUid().equals(tempMember.getUid())) {
-            throw new CustomException(ErrorCode.INVALID_OWNER, "You do not have permission to delete this income.");
+        validateOwnership(isIncome.getUid(), tempMember);
+
+        try {
+            incomeRepository.deleteByIndex(index);
+            assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INCOME_DELETION_FAILED, "소득을 삭제하지 못했습니다..", e);
         }
-
-        incomeRepository.deleteByIndex(index);  // income 삭제
-        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
-        //assetSummaryRepository.deleteDuplicateAssetSummary();
 
         return index;
     }

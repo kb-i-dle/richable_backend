@@ -32,68 +32,46 @@ public class IncomeController {
     // 소득 항목 리스트 반환
     @GetMapping("/all")
     public ResponseEntity<?> getTotalIncomeList() {
-        try {
             Integer uid = memberService.getCurrentUid();
             SuccessResponseDTO response = new SuccessResponseDTO(true, incomeService.getIncomeList(uid));
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            ErrorResponseDTO response = new ErrorResponseDTO(e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
     }
 
     // 소득 항목 리스트 반환
     @GetMapping("/detail/{index}")
     public ResponseEntity<?> getIncomeDetail(@PathVariable("index") Integer index) {
-        try {
             Integer uid = memberService.getCurrentUid();
             SuccessResponseDTO response = new SuccessResponseDTO(true, incomeService.getIncomeByIndex(uid, index));
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            ErrorResponseDTO response = new ErrorResponseDTO(e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
+
     }
 
     // 새로운 소득 추가
     @PostMapping("/add")
     public ResponseEntity<?> addIncome(@RequestBody IncomeDTO incomeDTO) {
-        try {
             Integer uid = memberService.getCurrentUid();
             SuccessResponseDTO response = new SuccessResponseDTO(true, incomeService.addIncome(uid, incomeDTO));
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            ErrorResponseDTO response = new ErrorResponseDTO(e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
     }
 
     // 소득 수정
     @PutMapping("/update")
     public ResponseEntity<?> updateIncome(@RequestBody IncomeDTO incomeDTO) {
-        try {
             Integer uid = memberService.getCurrentUid();
             SuccessResponseDTO response = new SuccessResponseDTO(true, incomeService.updateIncome(uid, incomeDTO));
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            ErrorResponseDTO response = new ErrorResponseDTO(e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
+
     }
 
     // 소득 삭제
     @DeleteMapping("/delete/{index}")
     public ResponseEntity<?> deleteIncome(@PathVariable("index") Integer index) {
-        try {
             Integer uid = memberService.getCurrentUid();
             Map<String, Object> indexData = new HashMap<>();
             indexData.put("index", incomeService.deleteIncomeByUidAndIndex(uid, index));
             SuccessResponseDTO response = new SuccessResponseDTO(true, indexData);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            ErrorResponseDTO response = new ErrorResponseDTO(e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
 
-}
+
