@@ -11,6 +11,4 @@ public class IncomeException extends CustomException {
     public static IncomeException InvalidIndexException() {
         return new IncomeException(ErrorCode.INVALID_INDEX, "Income not found with index");
     }
-
-
 }

@@ -31,7 +31,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "com.idle.kb_i_dle_backend"
 })
 @PropertySource("classpath:application.properties")
-@EnableAspectJAutoProxy
 @EnableScheduling // 스케쥴링 어노테이션
 public class WebConfig implements WebMvcConfigurer {
 

@@ -49,6 +49,8 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 public class MemberServiceImpl implements MemberService {
 
+
+
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailServiceImpl emailServiceImpl;
