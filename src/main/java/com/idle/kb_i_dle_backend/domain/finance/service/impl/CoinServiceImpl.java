@@ -26,7 +26,7 @@ public class CoinServiceImpl implements CoinService {
     private final AssetSummaryRepository assetSummaryRepository;
 
     @Override
-    public List<CoinDTO> getCoinList(Integer uid) throws Exception {
+    public List<CoinDTO> getCoinList(Integer uid) {
         Member member = memberService.findMemberByUid(uid);
         List<Coin> coins = coinRepository.findByUidAndDeleteDateIsNull(member);
 
@@ -54,7 +54,7 @@ public class CoinServiceImpl implements CoinService {
 
     @Transactional
     @Override
-    public CoinDTO updateCoin(Integer uid, CoinDTO coinDTO) throws ParseException {
+    public CoinDTO updateCoin(Integer uid, CoinDTO coinDTO) {
         Member member = memberService.findMemberByUid(uid);
 
         // Coin 조회
@@ -78,7 +78,7 @@ public class CoinServiceImpl implements CoinService {
 
     @Transactional
     @Override
-    public CoinDTO deleteCoin(Integer uid, Integer index) throws ParseException {
+    public CoinDTO deleteCoin(Integer uid, Integer index) {
         Member member = memberService.findMemberByUid(uid);
 
         // Coin 조회

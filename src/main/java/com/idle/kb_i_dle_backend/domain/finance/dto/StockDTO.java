@@ -23,10 +23,20 @@ public class StockDTO {
     private Integer hldgQty;
     private Integer avgBuyPrice;
     private String addDate;
+    private String deleteDate;
 
     public static StockDTO convertToDTO(Stock stock) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        return new StockDTO(stock.getIndex(), stock.getPdno(), stock.getPrdtName(), stock.getHldgQty(), stock.getAvgBuyPrice(), dateFormat.format(stock.getAddDate()));
+
+        Integer index = stock.getIndex();
+        Integer pdno = stock.getPdno();
+        String prdtName = stock.getPrdtName();
+        Integer hldgQty = stock.getHldgQty();
+        Integer avgBuyPrice = stock.getAvgBuyPrice();
+        String addDate = (stock.getAddDate() != null) ? dateFormat.format(stock.getAddDate()) : null;
+        String deleteDate = (stock.getDeleteDate() != null) ? dateFormat.format(stock.getDeleteDate()) : null;
+
+        return new StockDTO(index, pdno, prdtName, hldgQty, avgBuyPrice, addDate, deleteDate);
     }
 
     public static Stock convertToEntity(Member member, StockDTO stockDTO) throws ParseException {
@@ -34,6 +44,9 @@ public class StockDTO {
         Date addDate = (stockDTO.getAddDate() != null)
                 ? dateFormat.parse(stockDTO.getAddDate())
                 : null;  // null 값 유지
-        return new Stock(stockDTO.getIndex(), member, stockDTO.getPdno(), stockDTO.getPrdtName(), stockDTO.getHldgQty(), "stock", stockDTO.getAvgBuyPrice(), addDate, null);
+        Date delDate = (stockDTO.getDeleteDate() != null)
+                ? dateFormat.parse(stockDTO.getDeleteDate())
+                : null;  // null 값 유지
+        return new Stock(stockDTO.getIndex(), member, stockDTO.getPdno(), stockDTO.getPrdtName(), stockDTO.getHldgQty(), "stock", stockDTO.getAvgBuyPrice(), addDate, delDate);
     }
 }
