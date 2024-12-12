@@ -27,7 +27,17 @@ public class BankDTO {
     public static BankDTO convertToDTO(Bank bank) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        return new BankDTO(bank.getIndex(), bank.getOrgCode(), bank.getAccountNum(), bank.getName(), bank.getCategory(), bank.getAccountType(), bank.getBalanceAmt(), (bank.getAddDate() != null) ? dateFormat.format(bank.getAddDate()) : null, (bank.getDeleteDate() != null) ? dateFormat.format(bank.getDeleteDate()) : null);
+        Integer index = bank.getIndex();
+        String orgCode = bank.getOrgCode();
+        String accountNum = bank.getAccountNum();
+        String name = bank.getName();
+        String category = bank.getCategory();
+        String accountType = bank.getAccountType();
+        Long balanceAmt = bank.getBalanceAmt();
+        String addDate = (bank.getAddDate() != null) ? dateFormat.format(bank.getAddDate()) : null;
+        String deleteDate = (bank.getDeleteDate() != null) ? dateFormat.format(bank.getDeleteDate()) : null;
+
+        return new BankDTO(index, orgCode, accountNum, name, category, accountType, balanceAmt, addDate, deleteDate);
     }
 
     public static Bank convertToEntity(Member member, BankDTO bankDTO) throws ParseException {

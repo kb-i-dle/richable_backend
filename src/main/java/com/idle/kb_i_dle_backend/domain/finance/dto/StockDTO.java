@@ -27,7 +27,16 @@ public class StockDTO {
 
     public static StockDTO convertToDTO(Stock stock) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        return new StockDTO(stock.getIndex(), stock.getPdno(), stock.getPrdtName(), stock.getHldgQty(), stock.getAvgBuyPrice(), (stock.getAddDate() != null) ? dateFormat.format(stock.getAddDate()) : null, (stock.getDeleteDate() != null) ? dateFormat.format(stock.getDeleteDate()) : null);
+
+        Integer index = stock.getIndex();
+        Integer pdno = stock.getPdno();
+        String prdtName = stock.getPrdtName();
+        Integer hldgQty = stock.getHldgQty();
+        Integer avgBuyPrice = stock.getAvgBuyPrice();
+        String addDate = (stock.getAddDate() != null) ? dateFormat.format(stock.getAddDate()) : null;
+        String deleteDate = (stock.getDeleteDate() != null) ? dateFormat.format(stock.getDeleteDate()) : null;
+
+        return new StockDTO(index, pdno, prdtName, hldgQty, avgBuyPrice, addDate, deleteDate);
     }
 
     public static Stock convertToEntity(Member member, StockDTO stockDTO) throws ParseException {

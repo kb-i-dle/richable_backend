@@ -23,7 +23,14 @@ public class SpotDTO {
 
     public static SpotDTO convertToDTO(Spot spot) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        return new SpotDTO(spot.getIndex(), spot.getCategory(), spot.getName(), spot.getPrice(), (spot.getAddDate() != null) ? dateFormat.format(spot.getAddDate()) : null, (spot.getDeleteDate() != null) ? dateFormat.format(spot.getDeleteDate()) : null);
+        Integer index = spot.getIndex();
+        String category = spot.getCategory();
+        String name = spot.getName();
+        Long price = spot.getPrice();
+        String addDate = (spot.getAddDate() != null) ? dateFormat.format(spot.getAddDate()) : null;
+        String deleteDate = (spot.getDeleteDate() != null) ? dateFormat.format(spot.getDeleteDate()) : null;
+
+        return new SpotDTO(index, category, name, price, addDate, deleteDate);
     }
 
     public static Spot convertToEntity(Member member, SpotDTO spotDTO) throws ParseException {

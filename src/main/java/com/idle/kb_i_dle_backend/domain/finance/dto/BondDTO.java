@@ -25,7 +25,15 @@ public class BondDTO {
 
     public static BondDTO convertToDTO(Bond bond) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        return new BondDTO(bond.getIndex(), bond.getName(), bond.getCnt(), bond.getPrice(), (bond.getAddDate() != null) ? dateFormat.format(bond.getAddDate()) : null, (bond.getDeleteDate() != null) ? dateFormat.format(bond.getDeleteDate()) : null);
+
+        Integer index = bond.getIndex();
+        String name = bond.getName();
+        Integer count = bond.getCnt();
+        Integer price = bond.getPrice();
+        String addDate = (bond.getAddDate() != null) ? dateFormat.format(bond.getAddDate()) : null;
+        String deleteDate = (bond.getDeleteDate() != null) ? dateFormat.format(bond.getDeleteDate()) : null;
+
+        return new BondDTO(index, name, count, price, addDate, deleteDate);
     }
 
     public static Bond convertToEntity(Member member, BondDTO bondDTO) throws ParseException {

@@ -11,13 +11,14 @@ import com.idle.kb_i_dle_backend.domain.finance.service.BondService;
 import com.idle.kb_i_dle_backend.domain.finance.service.CoinService;
 import com.idle.kb_i_dle_backend.domain.finance.service.StockService;
 import com.idle.kb_i_dle_backend.domain.member.service.MemberService;
+import com.idle.kb_i_dle_backend.global.dto.ErrorResponseDTO;
 import com.idle.kb_i_dle_backend.global.dto.SuccessResponseDTO;
 
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,73 +53,87 @@ public class AssetController {
     }
 
     @PostMapping("/{category}/add")
-    public ResponseEntity<SuccessResponseDTO> addAsset(@PathVariable("category") String category, @RequestBody String reqBody) throws ParseException, JsonProcessingException {
+    public ResponseEntity<?> addAsset(@PathVariable("category") String category, @RequestBody String reqBody) {
         Integer uid = memberService.getCurrentUid();
-        switch (category) {
-            case "bank" -> {
-                BankDTO bankData = new ObjectMapper().readValue(reqBody, BankDTO.class);
-                return ResponseEntity.ok(new SuccessResponseDTO(true, bankService.addBank(uid, bankData)));
+        try {
+            switch (category) {
+                case "bank" -> {
+                    BankDTO bankData = new ObjectMapper().readValue(reqBody, BankDTO.class);
+                    return ResponseEntity.ok(new SuccessResponseDTO(true, bankService.addBank(uid, bankData)));
+                }
+                case "bond" -> {
+                    BondDTO bondData = new ObjectMapper().readValue(reqBody, BondDTO.class);
+                    return ResponseEntity.ok(new SuccessResponseDTO(true, bondService.addBond(uid, bondData)));
+                }
+                case "coin" -> {
+                    CoinDTO coinData = new ObjectMapper().readValue(reqBody, CoinDTO.class);
+                    return ResponseEntity.ok(new SuccessResponseDTO(true, coinService.addCoin(uid, coinData)));
+                }
+                default -> {
+                    StockDTO stockData = new ObjectMapper().readValue(reqBody, StockDTO.class);
+                    return ResponseEntity.ok(new SuccessResponseDTO(true, stockService.addStock(uid, stockData)));
+                }
             }
-            case "bond" -> {
-                BondDTO bondData = new ObjectMapper().readValue(reqBody, BondDTO.class);
-                return ResponseEntity.ok(new SuccessResponseDTO(true, bondService.addBond(uid, bondData)));
-            }
-            case "coin" -> {
-                CoinDTO coinData = new ObjectMapper().readValue(reqBody, CoinDTO.class);
-                return ResponseEntity.ok(new SuccessResponseDTO(true, coinService.addCoin(uid, coinData)));
-            }
-            default -> {
-                StockDTO stockData = new ObjectMapper().readValue(reqBody, StockDTO.class);
-                return ResponseEntity.ok(new SuccessResponseDTO(true, stockService.addStock(uid, stockData)));
-            }
+        } catch (Exception e) {
+            ErrorResponseDTO response = new ErrorResponseDTO(e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
 
     // Asset 수정
     @PutMapping("/{category}/update")
-    public ResponseEntity<SuccessResponseDTO> updateAsset(@PathVariable("category") String category, @RequestBody String reqBody) throws JsonProcessingException, ParseException {
+    public ResponseEntity<?> updateAsset(@PathVariable("category") String category, @RequestBody String reqBody) {
         Integer uid = memberService.getCurrentUid();
-        switch (category) {
-            case "bank" -> {
-                BankDTO bankData = new ObjectMapper().readValue(reqBody, BankDTO.class);
-                return ResponseEntity.ok(new SuccessResponseDTO(true, bankService.updateBank(uid, bankData)));
+        try {
+            switch (category) {
+                case "bank" -> {
+                    BankDTO bankData = new ObjectMapper().readValue(reqBody, BankDTO.class);
+                    return ResponseEntity.ok(new SuccessResponseDTO(true, bankService.updateBank(uid, bankData)));
+                }
+                case "bond" -> {
+                    BondDTO bondData = new ObjectMapper().readValue(reqBody, BondDTO.class);
+                    return ResponseEntity.ok(new SuccessResponseDTO(true, bondService.updateBond(uid, bondData)));
+                }
+                case "coin" -> {
+                    CoinDTO coinData = new ObjectMapper().readValue(reqBody, CoinDTO.class);
+                    return ResponseEntity.ok(new SuccessResponseDTO(true, coinService.updateCoin(uid, coinData)));
+                }
+                default -> {
+                    StockDTO stockData = new ObjectMapper().readValue(reqBody, StockDTO.class);
+                    return ResponseEntity.ok(new SuccessResponseDTO(true, stockService.updateStock(uid, stockData)));
+                }
             }
-            case "bond" -> {
-                BondDTO bondData = new ObjectMapper().readValue(reqBody, BondDTO.class);
-                return ResponseEntity.ok(new SuccessResponseDTO(true, bondService.updateBond(uid, bondData)));
-            }
-            case "coin" -> {
-                CoinDTO coinData = new ObjectMapper().readValue(reqBody, CoinDTO.class);
-                return ResponseEntity.ok(new SuccessResponseDTO(true, coinService.updateCoin(uid, coinData)));
-            }
-            default -> {
-                StockDTO stockData = new ObjectMapper().readValue(reqBody, StockDTO.class);
-                return ResponseEntity.ok(new SuccessResponseDTO(true, stockService.updateStock(uid, stockData)));
-            }
+        } catch (Exception e) {
+            ErrorResponseDTO response = new ErrorResponseDTO(e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
 
     // Asset 삭제
     @DeleteMapping("/{category}/delete/{index}")
-    public ResponseEntity<SuccessResponseDTO> updateAsset(@PathVariable("category") String category,
-                                         @PathVariable("index") Integer index) throws ParseException {
+    public ResponseEntity<SuccessResponseDTO> updateAsset(@PathVariable("category") String category, @PathVariable("index") Integer index) {
         Integer uid = memberService.getCurrentUid();
-        if (category.equals("bank")) {
-            Map<String, Object> indexData = new HashMap<>();
-            indexData.put("index", bankService.deleteBank(uid, index).getIndex());
-            return ResponseEntity.ok(new SuccessResponseDTO(true, indexData));
-        } else if (category.equals("bond")) {
-            Map<String, Object> indexData = new HashMap<>();
-            indexData.put("index", bondService.deleteBond(uid, index).getIndex());
-            return ResponseEntity.ok(new SuccessResponseDTO(true, indexData));
-        } else if (category.equals("coin")) {
-            Map<String, Object> indexData = new HashMap<>();
-            indexData.put("index", coinService.deleteCoin(uid, index).getIndex());
-            return ResponseEntity.ok(new SuccessResponseDTO(true, indexData));
-        } else {
-            Map<String, Object> indexData = new HashMap<>();
-            indexData.put("index", stockService.deleteStock(uid, index).getIndex());
-            return ResponseEntity.ok(new SuccessResponseDTO(true, indexData));
+        switch (category) {
+            case "bank" -> {
+                Map<String, Object> indexData = new HashMap<>();
+                indexData.put("index", bankService.deleteBank(uid, index).getIndex());
+                return ResponseEntity.ok(new SuccessResponseDTO(true, indexData));
+            }
+            case "bond" -> {
+                Map<String, Object> indexData = new HashMap<>();
+                indexData.put("index", bondService.deleteBond(uid, index).getIndex());
+                return ResponseEntity.ok(new SuccessResponseDTO(true, indexData));
+            }
+            case "coin" -> {
+                Map<String, Object> indexData = new HashMap<>();
+                indexData.put("index", coinService.deleteCoin(uid, index).getIndex());
+                return ResponseEntity.ok(new SuccessResponseDTO(true, indexData));
+            }
+            default -> {
+                Map<String, Object> indexData = new HashMap<>();
+                indexData.put("index", stockService.deleteStock(uid, index).getIndex());
+                return ResponseEntity.ok(new SuccessResponseDTO(true, indexData));
+            }
         }
     }
 

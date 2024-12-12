@@ -25,7 +25,15 @@ public class CoinDTO {
 
     public static CoinDTO convertToDTO(Coin coin) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        return new CoinDTO(coin.getIndex(), coin.getCurrency(), coin.getBalance(), coin.getAvgBuyPrice(), (coin.getAddDate() != null) ? dateFormat.format(coin.getAddDate()) : null, (coin.getDeleteDate() != null) ? dateFormat.format(coin.getDeleteDate()) : null);
+
+        Integer index = coin.getIndex();
+        String currency = coin.getCurrency();
+        Double balance = coin.getBalance();
+        Double avgBuyPrice = coin.getAvgBuyPrice();
+        String addDate = (coin.getAddDate() != null) ? dateFormat.format(coin.getAddDate()) : null;
+        String deleteDate = (coin.getDeleteDate() != null) ? dateFormat.format(coin.getDeleteDate()) : null;
+
+        return new CoinDTO(index, currency, balance, avgBuyPrice, addDate, deleteDate);
     }
 
     public static Coin convertToEntity(Member member, CoinDTO coinDTO) throws ParseException {

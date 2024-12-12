@@ -56,9 +56,14 @@ public class SpotController {
 
     // 새로운 Spot 추가
     @PostMapping("/spot/add")
-    public ResponseEntity<SuccessResponseDTO> addSpot(@RequestBody SpotDTO spotDTO) throws ParseException {
+    public ResponseEntity<?> addSpot(@RequestBody SpotDTO spotDTO) {
         Integer uid = memberService.getCurrentUid();
-        return ResponseEntity.ok(new SuccessResponseDTO(true, spotService.addSpot(uid, spotDTO)));
+        try {
+            return ResponseEntity.ok(new SuccessResponseDTO(true, spotService.addSpot(uid, spotDTO)));
+        } catch (Exception e) {
+            ErrorResponseDTO response = new ErrorResponseDTO(e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
     }
 
     // Spot 수정
