@@ -28,6 +28,9 @@ public enum ErrorCode {
     // com.google.gson JSON 파싱 실패
     JSON_PARSE_ERROR(400, "G006", "JsonParseException"),
 
+    //특정 오류에 대한 세부 정보를 정의함
+    PARSE_ERROR(400, "G013", "Parse Error occurred"),
+
     // com.fasterxml.jackson.core Processing Error
     JACKSON_PROCESS_ERROR(400, "G007", "com.fasterxml.jackson.core Exception"),
 
@@ -77,7 +80,6 @@ public enum ErrorCode {
     INVALID_GOAL(200, "G04", "Invalid Goal"),
 
     //INCOME
-
     //Bond
 
     INVALID_BOND(200, "BO01", "user dont have bond"),
@@ -94,7 +96,19 @@ public enum ErrorCode {
     INVALID_STOCK(200, "ST01", "USER DONT HAVE STOCK"),
 
     //INCOME
-    INVALID_INCOME(200, "I01", "USER DONT HAVE INCOME"),
+    INCOME_PARSE_ERROR(400, "I06", "Income date parse error"),
+
+    INVALID_INCOME(404, "I01", "User does not have income data"),
+
+    NO_INCOME_DATA(404, "I02", "No income data found"),
+
+    INCOME_CREATION_FAILED(500, "I03", "Failed to create income"),
+
+    INCOME_UPDATE_FAILED(500, "I04", "Failed to update income"),
+
+    INCOME_DELETION_FAILED(500, "I05", "Failed to delete income"),
+
+
 
     //Invest
     NO_ASSETS_FOUND(200, "IV01", "No assets found for the user"),
