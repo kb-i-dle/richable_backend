@@ -2,24 +2,17 @@ package com.idle.kb_i_dle_backend.domain.member.service.impl;
 
 import com.idle.kb_i_dle_backend.config.exception.CustomException;
 import com.idle.kb_i_dle_backend.domain.finance.repository.AssetSummaryRepository;
-import com.idle.kb_i_dle_backend.domain.member.dto.CustomUserDetails;
-import com.idle.kb_i_dle_backend.domain.member.dto.LoginDTO;
-import com.idle.kb_i_dle_backend.domain.member.dto.MemberDTO;
-import com.idle.kb_i_dle_backend.domain.member.dto.MemberInfoDTO;
-import com.idle.kb_i_dle_backend.domain.member.dto.MemberJoinDTO;
+import com.idle.kb_i_dle_backend.domain.member.dto.*;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
 import com.idle.kb_i_dle_backend.domain.member.entity.MemberAPI;
 import com.idle.kb_i_dle_backend.domain.member.exception.MemberException;
 import com.idle.kb_i_dle_backend.domain.member.repository.MemberRepository;
-import com.idle.kb_i_dle_backend.domain.member.service.EmailService;
 import com.idle.kb_i_dle_backend.domain.member.service.MemberApiService;
-import com.idle.kb_i_dle_backend.domain.member.service.MemberInfoService;
 import com.idle.kb_i_dle_backend.domain.member.service.MemberService;
 import com.idle.kb_i_dle_backend.domain.member.util.JwtProcessor;
 import com.idle.kb_i_dle_backend.global.codes.ErrorCode;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +20,7 @@ import java.util.Random;
 import java.util.UUID;
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -41,7 +34,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -49,6 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -60,10 +53,10 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    private final EmailServiceImpl emailServiceImpl;
     private final AuthenticationManager authenticationManager;
     private final JwtProcessor jwtProcessor;
-    private final MemberInfoService memberInfoService;
+    private final MemberInfoServiceImpl memberInfoService;
     private final MemberApiService memberApiService;
     private final RestTemplate restTemplate;
     private final HttpServletRequest request;
@@ -98,7 +91,6 @@ public class MemberServiceImpl implements MemberService {
 
             // 자산 리포트 업데이트
             assetSummaryRepository.insertOrUpdateAssetSummary(userInfo.getUid());
-            //assetSummaryRepository.deleteDuplicateAssetSummary();
 
             Map<String, Object> result = new HashMap<>();
             result.put("token", jwtToken);
@@ -116,18 +108,23 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Map initiateNaverLogin(HttpServletRequest request) {
-        String state = UUID.randomUUID().toString();
-        request.getSession().setAttribute("naverState", state);
+    public Map<String, Object> initiateNaverLogin(HttpServletRequest request) {
+        try {
+            String state = UUID.randomUUID().toString();
+            request.getSession().setAttribute("naverState", state);
 
-        String authorizationUrl = "https://nid.naver.com/oauth2.0/authorize"
-                + "?response_type=code"
-                + "&client_id=" + clientId
-                + "&redirect_uri=" + redirectUri
-                + "&state=" + state;
-        log.info("initiateNaverLogin");
+            String authorizationUrl = "https://nid.naver.com/oauth2.0/authorize"
+                    + "?response_type=code"
+                    + "&client_id=" + clientId
+                    + "&redirect_uri=" + redirectUri
+                    + "&state=" + state;
+            log.info("initiateNaverLogin");
 
-        return Map.of("redirectUrl", authorizationUrl);
+            return Map.of("redirectUrl", authorizationUrl);
+        } catch (Exception e) {
+            log.error("Failed to initiate Naver login", e);
+            return Map.of("error", "네이버 로그인 초기화 중 오류가 발생했습니다.");
+        }
     }
 
     @Override
@@ -251,8 +248,19 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public boolean checkDupl(String id) {
-        return memberRepository.existsById(id);
+    public Map<String, Object> checkDupl(String id) {
+        boolean exists = memberRepository.existsById(id);
+        Map<String, Object> result = new HashMap<>();
+
+        if (!exists) {
+            result.put("available", true);
+            result.put("message", "사용 가능한 ID입니다");
+        } else {
+            result.put("available", false);
+            result.put("message", "중복된 ID입니다");
+        }
+
+        return result;
     }
 
     @Override
@@ -375,7 +383,7 @@ public class MemberServiceImpl implements MemberService {
         // 이메일 전송
         String subject = "Richable 인증 코드";
         String text = "귀하의 인증 코드는 " + verificationCode + " 입니다.";
-        emailService.sendSimpleMessage(email, subject, text);
+        emailServiceImpl.sendSimpleMessage(email, subject, text);
 
         return verificationCode;
     }
@@ -399,30 +407,70 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Map<String, Object> verifyCode(String email, String code) {
-        Map<String, Object> result = new HashMap<>();
-        try {
-            String savedCode = verificationCodes.get(email);
-            if (savedCode != null && savedCode.equals(code)) {
-                Member member = memberRepository.findByEmail(email);
-                if (member != null) {
-                    result.put("verified", true);
-                    result.put("id", member.getId());
-                    result.put("message", "인증이 성공적으로 완료되었습니다.");
-                } else {
-                    result.put("verified", false);
-                    result.put("message", "해당 이메일로 등록된 사용자를 찾을 수 없습니다.");
-                }
-            } else {
-                result.put("verified", false);
-                result.put("message", "인증 코드가 일치하지 않습니다.");
-            }
-        } catch (Exception e) {
-            log.error("Error in verifyCode: ", e);
-            result.put("verified", false);
-            result.put("message", "서버 오류가 발생했습니다.");
+    public VerificationResult verifyCode(String email, String code, VerificationType type) {
+        log.info("Verifying code for email: {} and type: {}", email, type);
+
+        validateInputs(email, code);
+        String savedCode = getStoredVerificationCode(email);
+        validateVerificationCode(code, savedCode);
+
+        Member member = findMemberByEmail(email);
+
+        if (type == VerificationType.ID) {
+            return createIdVerificationResult(member);
+        } else {
+            return createPasswordVerificationResult(member);
         }
-        return result;
+    }
+
+    private void validateInputs(String email, String code) {
+        if (StringUtils.isEmpty(email) || StringUtils.isEmpty(code)) {
+            log.error("Email or code is empty");
+            throw new MemberException(ErrorCode.INVALID_INPUT, "이메일과 인증 코드는 필수입니다.");
+        }
+    }
+
+    private String getStoredVerificationCode(String email) {
+        String savedCode = verificationCodes.get(email);
+        if (savedCode == null) {
+            log.error("No verification code found for email: {}", email);
+            throw new MemberException(ErrorCode.INVALID_VERIFICATION_CODE, "인증 코드가 만료되었습니다.");
+        }
+        return savedCode;
+    }
+
+    private void validateVerificationCode(String inputCode, String savedCode) {
+        if (!savedCode.equals(inputCode)) {
+            log.error("Verification code mismatch");
+            throw new MemberException(ErrorCode.INVALID_VERIFICATION_CODE, "인증 코드가 일치하지 않습니다.");
+        }
+    }
+
+    private Member findMemberByEmail(String email) {
+        Member member = memberRepository.findByEmail(email);
+        if (member == null) {
+            log.error("No member found with email: {}", email);
+            throw new MemberException(ErrorCode.MEMBER_NOT_FOUND, "해당 이메일로 등록된 사용자를 찾을 수 없습니다.");
+        }
+        return member;
+    }
+
+    private VerificationResult createIdVerificationResult(Member member) {
+        log.info("Creating ID verification result for member: {}", member.getId());
+        return VerificationResult.builder()
+                .verified(true)
+                .message("인증이 성공적으로 완료되었습니다.")
+                .id(member.getId())
+                .build();
+    }
+
+    private VerificationResult createPasswordVerificationResult(Member member) {
+        log.info("Creating password verification result for member: {}", member.getId());
+        return VerificationResult.builder()
+                .verified(true)
+                .message("비밀번호를 재설정할 수 있습니다.")
+                .canResetPassword(true)
+                .build();
     }
 
     @Override

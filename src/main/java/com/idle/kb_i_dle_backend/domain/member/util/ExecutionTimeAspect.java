@@ -13,12 +13,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class ExecutionTimeAspect {
 
-    @Around("execution(* com.idle.kb_i_dle_backend.domain.member.service.MasterService.updateStockPrices())")
+    @Around("execution(* com.idle.kb_i_dle_backend.domain.master.service.MasterService.updateStockPrices())")
     public Object measureUpdateStockPricesExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         return measureExecutionTime(joinPoint, "updateStockPrices");
     }
 
-    @Around("execution(* com.idle.kb_i_dle_backend.domain.member.service.MasterService.updateStockPricesBefore())")
+    @Around("execution(* com.idle.kb_i_dle_backend.domain.master.service.MasterService.updateStockPricesBefore())")
     public Object measureUpdateStockPricesBeforeExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         return measureExecutionTime(joinPoint, "updateStockPricesBefore");
     }
