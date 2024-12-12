@@ -28,7 +28,7 @@ public class SpotServiceImpl implements SpotService {
 
     // 카테고리별 현물 자산 총합
     @Override
-    public PriceSumDTO getTotalPriceByCategory(Integer uid, String category) throws Exception {
+    public PriceSumDTO getTotalPriceByCategory(Integer uid, String category) {
 
         Member member = memberService.findMemberByUid(uid);
 
@@ -55,7 +55,7 @@ public class SpotServiceImpl implements SpotService {
 
     // 전체 현물 자산 총합
     @Override
-    public PriceSumDTO getTotalPrice(Integer uid) throws Exception {
+    public PriceSumDTO getTotalPrice(Integer uid) {
         Member member = memberService.findMemberByUid(uid);
         List<Spot> spots = spotRepository.findByUidAndDeleteDateIsNull(member);
 
@@ -74,7 +74,7 @@ public class SpotServiceImpl implements SpotService {
 
     // 현물 자산 목록 전체 조회
     @Override
-    public List<SpotDTO> getSpotList(Integer uid) throws Exception {
+    public List<SpotDTO> getSpotList(Integer uid) {
         Member member = memberService.findMemberByUid(uid);
         List<Spot> spots = spotRepository.findByUidAndDeleteDateIsNull(member);
 
@@ -110,7 +110,7 @@ public class SpotServiceImpl implements SpotService {
     // 현물 자산 수정
     @Transactional
     @Override
-    public SpotDTO updateSpot(Integer uid, SpotDTO spotDTO) throws ParseException {
+    public SpotDTO updateSpot(Integer uid, SpotDTO spotDTO) {
         Member member = memberService.findMemberByUid(uid);
 
         // Spot 조회

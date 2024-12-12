@@ -1,5 +1,6 @@
-package com.idle.kb_i_dle_backend.domain.finance.service;
+package com.idle.kb_i_dle_backend.domain.finance.service.impl;
 
+import com.idle.kb_i_dle_backend.config.exception.CustomException;
 import com.idle.kb_i_dle_backend.domain.finance.dto.AssetDTO;
 import com.idle.kb_i_dle_backend.domain.finance.dto.BondReturnDTO;
 import com.idle.kb_i_dle_backend.domain.finance.dto.CoinReturnDTO;
@@ -31,6 +32,7 @@ import com.idle.kb_i_dle_backend.domain.finance.repository.StockProductPriceRepo
 import com.idle.kb_i_dle_backend.domain.finance.repository.StockPriceRepository;
 import com.idle.kb_i_dle_backend.domain.finance.repository.StockProductRepository;
 import com.idle.kb_i_dle_backend.domain.finance.repository.StockRepository;
+import com.idle.kb_i_dle_backend.domain.finance.service.FinanceService;
 import com.idle.kb_i_dle_backend.domain.income.repository.IncomeRepository;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
 import com.idle.kb_i_dle_backend.domain.member.repository.MemberRepository;
@@ -39,18 +41,13 @@ import com.idle.kb_i_dle_backend.domain.outcome.repository.OutcomeUserRepository
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import com.idle.kb_i_dle_backend.global.codes.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -89,17 +86,35 @@ public class FinanceServiceImpl implements FinanceService {
     // 금융 자산 합계 계산
     @Override
     public FinancialSumDTO getFinancialAssetsSum(int uid) {
-        Member member = memberService.findMemberByUid(uid);
-        Long financialAssetsSum = assetSummaryRepository.findLatestByUidZeroMonthAgo(member).getTotalAmount();
-        return new FinancialSumDTO(financialAssetsSum);
+        try {
+            Member member = memberService.findMemberByUid(uid);
+            Long financialAssetsSum = Optional.ofNullable(assetSummaryRepository.findLatestByUidZeroMonthAgo(member))
+                    .map(AssetSummary::getTotalAmount)
+                    .orElse(0L); // 데이터가 없을 경우 0을 기본값으로 설정
+            return new FinancialSumDTO(financialAssetsSum);
+        } catch (DataAccessException e) {
+            // 데이터베이스 관련 예외 처리
+            throw new CustomException(ErrorCode.DATABASE_ERROR, "Failed to retrieve financial asset summary");
+        } catch (Exception e) {
+            // 기타 예외 처리
+            throw new CustomException(ErrorCode.UNKNOWN_ERROR, "An unexpected error occurred");
+        }
     }
+
 
     // 총 자산 합계 계산 (금융 자산 + Spot 자산)
     @Override
     public FinancialSumDTO getTotalAssetsSum(int uid) {
         Member member = memberService.findMemberByUid(uid);
-        Long totalAssetsSum =
-                assetSummaryRepository.findLatestByUidZeroMonthAgo(member).getTotalAmount() + calculateSpotAssetsSum(member);
+
+        // Asset Summary 조회
+        Long totalAssetsSum = Optional.ofNullable(assetSummaryRepository.findLatestByUidZeroMonthAgo(member))
+                .map(AssetSummary::getTotalAmount)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ERROR, "Asset summary not found for member: " + uid));
+
+        // Spot Asset 계산
+        totalAssetsSum += calculateSpotAssetsSum(member);
+
         return new FinancialSumDTO(totalAssetsSum);
     }
 
@@ -108,6 +123,11 @@ public class FinanceServiceImpl implements FinanceService {
         Member member = memberService.findMemberByUid(uid);
         AssetSummary assetSummary = assetSummaryRepository.findFirstByUidAndUpdateDateBeforeOrderByUpdateDateDesc(
                 member, date);
+
+        if (assetSummary == null) {
+            throw new CustomException(ErrorCode.NOT_FOUND_ERROR, "No asset summary found before the specified date for UID: " + uid);
+        }
+
         return new FinancialSumDTO(assetSummary.getTotalAmount());
     }
 
@@ -118,7 +138,7 @@ public class FinanceServiceImpl implements FinanceService {
         AssetSummary assetSummary = assetSummaryRepository.findLatestByUidZeroMonthAgo(member);
 
         if (assetSummary == null) {
-            throw new RuntimeException("Asset summary not found for user: " + uid);
+            throw new CustomException(ErrorCode.NOT_FOUND_ERROR, "No asset summary found before the specified date for UID: " + uid);
         }
 
         List<AssetDTO> assetList = new ArrayList<>();
@@ -136,6 +156,7 @@ public class FinanceServiceImpl implements FinanceService {
 
         return assetList;
     }
+
     private Long getOrDefault(Long value, Long defaultValue) {
         return value != null ? value : defaultValue;
     }
@@ -213,6 +234,10 @@ public class FinanceServiceImpl implements FinanceService {
         List<StockReturnDTO> stockReturns = new ArrayList<>();
         List<Stock> stocks = stockRepository.findAllByUidAndDeleteDateIsNull(member);
 
+        if (stocks.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_STOCK, "user dont have stocks");
+        }
+
         for (int i = 0; i < 6; i++) {
             double totalStockReturn = 0;
             int stockCount = 0;
@@ -269,6 +294,11 @@ public class FinanceServiceImpl implements FinanceService {
         Member member = memberService.findMemberByUid(uid);
         List<CoinReturnDTO> coinReturns = new ArrayList<>();
         List<Coin> coins = coinRepository.findAllByUidAndDeleteDateIsNull(member);
+
+        if (coins.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_COIN, "user dont have coin");
+        }
+
         for (int i = 0; i < 6; i++) {
             double totalCoinReturn = 0;
             int coinCount = 0;
@@ -320,6 +350,9 @@ public class FinanceServiceImpl implements FinanceService {
         Member member = memberService.findMemberByUid(uid);
         List<BondReturnDTO> bondReturns = new ArrayList<>();
         List<Bond> bonds = bondRepository.findAllByUidAndDeleteDateIsNull(member);
+        if (bonds.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_BOND, "user dont have bond");
+        }
 
         for (int i = 0; i < 6; i++) {
             double totalBondReturn = 0;
@@ -373,14 +406,20 @@ public class FinanceServiceImpl implements FinanceService {
     }
 
     // Spot 자산 합산 메서드
-    private long calculateSpotAssetsSum(Member uid) {
+    public long calculateSpotAssetsSum(Member uid) {
         List<Spot> spotData = spotRepository.findByUidAndDeleteDateIsNull(uid);
+        if (spotData.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_SPOT, "user dont have spots");
+        }
         return spotData.stream().mapToLong(Spot::getPrice).sum();
     }
 
     // Spot 자산 월별 합산 메서드
     private long calculateSpotAssetsSumBefore(Member uid, int monthsAgo) {
         List<Object[]> spotAssets = spotRepository.findMonthlySpotAssets(uid);
+        if (spotAssets.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_SPOT, "user dont have spots");
+        }
         return spotAssets.stream()
                 .filter(row -> (int) row[0] == monthsAgo)  // month 필터링
                 .mapToLong(row -> ((BigDecimal) row[1]).longValue())  // totalAmount 계산
@@ -389,7 +428,14 @@ public class FinanceServiceImpl implements FinanceService {
 
     public List<MonthlyBalanceDTO> getMonthlyIncomeOutcomeBalance(int uid) {
         List<Object[]> incomeResults = incomeRepository.findMonthlyIncomeByUid(uid);
+        if (incomeResults.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_INCOME, "user dont have incomes");
+        }
+
         List<Object[]> outcomeResults = outComeUserRepository.findMonthlyOutcomeByUid(uid);
+        if (outcomeResults.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_OUTCOME, "user dont have outcomes");
+        }
 
         TreeMap<String, MonthlyBalanceDTO> balanceMap = new TreeMap<>();
 
@@ -437,6 +483,11 @@ public class FinanceServiceImpl implements FinanceService {
 
         // 4. 현재 사용자의 자산 정보 구하기
         AssetSummary userAssetSummary = assetSummaryRepository.findLatestByUid(member);
+
+        if (userAssetSummary == null) {
+            throw new CustomException(ErrorCode.ASSET_SUMMARY_NOT_FOUND, "No asset summary found for user: " + uid);
+        }
+
         Long userTotalAmount = userAssetSummary.getTotalAmount();
 
         // 5. 차이 계산
@@ -465,7 +516,7 @@ public class FinanceServiceImpl implements FinanceService {
         // 3. 자산 요약 가져오기
         AssetSummary userAssetSummary = assetSummaryRepository.findLatestByUid(member);
         if (userAssetSummary == null) {
-            throw new IllegalArgumentException("Asset summary not found for uid: " + uid);
+            throw new CustomException(ErrorCode.ASSET_SUMMARY_NOT_FOUND, "No asset summary found for user: " + uid);
         }
 
         // 4. 자산 카테고리별로 비교
@@ -543,6 +594,8 @@ public class FinanceServiceImpl implements FinanceService {
                 log.info("Updated asset summary for user: {}", member.getUid());
             } catch (Exception e) {
                 log.error("Error updating asset summary for user: {}", member.getUid(), e);
+                throw new CustomException(ErrorCode.DATABASE_UPDATE_ERROR,
+                        "Failed to update asset summary for user: " + member.getUid());
             }
         });
         log.info("Completed scheduled asset summary update for all users");

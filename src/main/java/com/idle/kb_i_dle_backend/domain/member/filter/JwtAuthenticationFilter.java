@@ -1,6 +1,6 @@
 package com.idle.kb_i_dle_backend.domain.member.filter;
 
-import com.idle.kb_i_dle_backend.domain.member.service.CustomMemberDetailsService;
+import com.idle.kb_i_dle_backend.domain.member.service.impl.CustomMemberDetailsService;
 import com.idle.kb_i_dle_backend.domain.member.util.JwtProcessor;
 import java.io.IOException;
 import javax.servlet.FilterChain;

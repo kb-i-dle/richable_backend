@@ -3,7 +3,7 @@ package com.idle.kb_i_dle_backend.config;
 import com.idle.kb_i_dle_backend.domain.member.filter.JwtAuthenticationFilter;
 import com.idle.kb_i_dle_backend.domain.member.handler.CustomAccessDeniedHandler;
 import com.idle.kb_i_dle_backend.domain.member.handler.CustomAuthenticationEntryPoint;
-import com.idle.kb_i_dle_backend.domain.member.service.CustomMemberDetailsService;
+import com.idle.kb_i_dle_backend.domain.member.service.impl.CustomMemberDetailsService;
 import com.idle.kb_i_dle_backend.domain.member.util.JwtProcessor;
 import java.util.Arrays;
 import org.springframework.context.annotation.Bean;
