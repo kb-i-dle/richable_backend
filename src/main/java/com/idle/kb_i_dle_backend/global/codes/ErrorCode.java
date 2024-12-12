@@ -139,6 +139,9 @@ public enum ErrorCode {
     //S3
     INVALID_FILE(400, "S01", "Invalid File"),
     NO_SUCH_ALGO(500, "S02", "INVALID ALGO"),
+
+    //master
+    UPDATE_STOCKERROR(400,"M01","Error in update"),
     ;;
 
 
