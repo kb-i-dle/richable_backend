@@ -1,4 +1,4 @@
-package com.idle.kb_i_dle_backend.domain.member.service;
+package com.idle.kb_i_dle_backend.domain.member.service.impl;
 
 import com.idle.kb_i_dle_backend.domain.member.dto.CustomUserDetails;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
