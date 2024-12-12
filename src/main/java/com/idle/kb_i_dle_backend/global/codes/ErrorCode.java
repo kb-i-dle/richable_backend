@@ -79,9 +79,7 @@ public enum ErrorCode {
 
     INVALID_GOAL(200, "G04", "Invalid Goal"),
 
-    //INCOME
     //Bond
-
     INVALID_BOND(200, "BO01", "user dont have bond"),
 
     //Bank
@@ -135,15 +133,25 @@ public enum ErrorCode {
     NAVER_LOGIN_FAILED(400, "M09", "navigate failed"),
     INVALID_INPUT(500,"M10","Invalid Input"),
 
+    // Asset Summary
+    ASSET_SUMMARY_NOT_FOUND(404, "A01", "asset summary not found"),
+    DATABASE_UPDATE_ERROR(500, "DB01", "Error updating asset summary for user"),
+
+    // Database 관련 에러
+    DATABASE_ERROR(500, "DB01", "Database Access Error"),
+
+
+    // 기타 필요한 에러 코드들
+    UNKNOWN_ERROR(500, "G999", "An unexpected error occurred"),
 
     //S3
     INVALID_FILE(400, "S01", "Invalid File"),
+
     NO_SUCH_ALGO(500, "S02", "INVALID ALGO"),
 
     //master
     UPDATE_STOCKERROR(400,"M01","Error in update"),
     ;;
-
 
     /**
      * ******************************* Error Code Constructor ***************************************

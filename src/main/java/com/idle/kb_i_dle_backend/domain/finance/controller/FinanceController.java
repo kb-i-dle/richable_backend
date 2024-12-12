@@ -39,107 +39,74 @@ public class FinanceController {
     @GetMapping("/fin/sum")
     public ResponseEntity<SuccessResponseDTO> getFinancialAssetsSum() {
         Integer uid = memberService.getCurrentUid();
-
-        if (uid == null) {
-            throw new IllegalArgumentException("UID is missing==============================================");
-        }
-
         FinancialSumDTO totalPrice = financeService.getFinancialAssetsSum(uid);
-        SuccessResponseDTO Response = new SuccessResponseDTO(true, totalPrice);
-
-        return ResponseEntity.ok(Response);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, totalPrice));
     }
 
 
     // AS_2 금융 +현물 자산 합 조회
     @GetMapping("/fin")
-    public ResponseEntity<?> getTotalAsset() {
+    public ResponseEntity<SuccessResponseDTO> getTotalAsset() {
         Integer uid = memberService.getCurrentUid();
-
         List<AssetDTO> totalPrice = financeService.getFinancialAsset(uid);
-        SuccessResponseDTO successResponse = new SuccessResponseDTO(true, totalPrice);
-
-        return ResponseEntity.ok(successResponse);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, totalPrice));
     }
 
     // AS_2 금융 +현물 자산 합 조회
     @GetMapping("/total/sum")
-    public ResponseEntity<?> getTotalAssetsSum() {
+    public ResponseEntity<SuccessResponseDTO> getTotalAssetsSum() {
         Integer uid = memberService.getCurrentUid();
-
         FinancialSumDTO totalPrice = financeService.getTotalAssetsSum(uid);
-        SuccessResponseDTO successResponse = new SuccessResponseDTO(true, totalPrice);
-
-        return ResponseEntity.ok(successResponse);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, totalPrice));
     }
 
 
     // AS_5 6개월간 금융 자산 변화 추이
     @GetMapping("/changed/fin")
-    public ResponseEntity<?> getSixMonthFinancialChanges() {
+    public ResponseEntity<SuccessResponseDTO> getSixMonthFinancialChanges() {
         Integer uid = memberService.getCurrentUid();
-
         List<FinancialChangeDTO> result = financeService.getSixMonthFinancialChanges(uid);
-        SuccessResponseDTO successResponse = new SuccessResponseDTO(true, result);
-
-        return ResponseEntity.ok(successResponse);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, result));
     }
 
     // AS_6 6개월간 금융 자산 + 현물량 변화 추이
     @GetMapping("/changed/spot")
-    public ResponseEntity<?> getSixMonthTotalChanges() {
+    public ResponseEntity<SuccessResponseDTO> getSixMonthTotalChanges() {
         Integer uid = memberService.getCurrentUid();
-
         List<TotalChangeDTO> result = financeService.getSixMonthTotalChanges(uid);
-
-        SuccessResponseDTO successResponse = new SuccessResponseDTO(true, result);
-
-        return ResponseEntity.ok(successResponse);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, result));
     }
 
     // AS_7 달별 저축률 추이
     @GetMapping("/return/income")
-    public ResponseEntity<?> getMonthlySavingRateTrend() {
+    public ResponseEntity<SuccessResponseDTO> getMonthlySavingRateTrend() {
         Integer uid = memberService.getCurrentUid();
         List<MonthlyBalanceDTO> totalPrice = financeService.getMonthlyIncomeOutcomeBalance(uid);
-
-        SuccessResponseDTO successResponse = new SuccessResponseDTO(true, totalPrice);
-
-        return ResponseEntity.ok(successResponse);
-
+        return ResponseEntity.ok(new SuccessResponseDTO(true, totalPrice));
     }
 
     // AS_8 달별 주식 수익률
     @GetMapping("/return/stock")
-    public ResponseEntity<?> getStockReturnTrend() {
+    public ResponseEntity<SuccessResponseDTO> getStockReturnTrend() {
         Integer uid = memberService.getCurrentUid();
         List<StockReturnDTO> stockReturn = financeService.getStockReturnTrend(uid);
-
-        SuccessResponseDTO successResponse = new SuccessResponseDTO(true, stockReturn);
-
-        return ResponseEntity.ok(successResponse);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, stockReturn));
     }
 
     // AS_9 달별 가상화폐 수익률
     @GetMapping("/return/coin")
-    public ResponseEntity<?> getCoinReturnTrend() {
+    public ResponseEntity<SuccessResponseDTO> getCoinReturnTrend() {
         Integer uid = memberService.getCurrentUid();
         List<CoinReturnDTO> coinReturn = financeService.getCoinReturnTrend(uid);
-
-        SuccessResponseDTO successResponse = new SuccessResponseDTO(true, coinReturn);
-
-        return ResponseEntity.ok(successResponse);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, coinReturn));
     }
 
     // AS_10 달별 채권 수익률
     @GetMapping("/return/bond")
-    public ResponseEntity<?> getBondReturnTrend() {
+    public ResponseEntity<SuccessResponseDTO> getBondReturnTrend() {
         Integer uid = memberService.getCurrentUid();
         List<BondReturnDTO> bondReturn = financeService.getBondReturnTrend(uid);
-
-        SuccessResponseDTO successResponse = new SuccessResponseDTO(true, bondReturn);
-
-        return ResponseEntity.ok(successResponse);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, bondReturn));
     }
 
     // AS_11
@@ -147,52 +114,32 @@ public class FinanceController {
     public ResponseEntity<SuccessResponseDTO> compareAssetsWithAgeGroup() {
         Integer uid = memberService.getCurrentUid();
         Map<String, Object> response = financeService.compareAssetsWithAgeGroup(uid);
-        SuccessResponseDTO Response = new SuccessResponseDTO(true, response);
-
-        return ResponseEntity.ok(Response);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, response));
     }
 
     @GetMapping("/peer/finance")
     public ResponseEntity<SuccessResponseDTO> compareAssetsByCategoryWithAgeGroup() {
         Integer uid = memberService.getCurrentUid();
         List<Map<String, Object>> response = financeService.compareAssetsByCategoryWithAgeGroup(uid);
-        SuccessResponseDTO Response = new SuccessResponseDTO(true, response);
-
-        return ResponseEntity.ok(Response);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, response));
     }
 
     @GetMapping("/product/bond")
     public ResponseEntity<SuccessResponseDTO> getBondProductList() {
         List<BondProduct> bondProducts = financeService.findBondProductsWithNonNullPrices();
-        SuccessResponseDTO response = new SuccessResponseDTO(true, bondProducts);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, bondProducts));
     }
 
-    //    @GetMapping("/product/stock")
-//    public ResponseEntity<SuccessResponseDTO> getStockProductList() {
-//        // 시작 시간 측정
-//        long startTime = System.currentTimeMillis();
-//        List<StockProduct> stockProducts = financeService.findStockProducts();
-//        // 종료 시간 측정
-//        long endTime = System.currentTimeMillis();
-//        // 소요 시간 계산
-//        long duration = endTime - startTime;
-//        System.out.println("findStockProducts() 수행 시간: " + duration + " ms");
-//        SuccessResponseDTO response = new SuccessResponseDTO(true, stockProducts);
-//        return ResponseEntity.ok(response);
-//    }
     @GetMapping("/product/stock")
     public ResponseEntity<SuccessResponseDTO> getStockProductList(@RequestParam(defaultValue = "200") int limit) {
         List<StockProduct> stockProducts = financeService.findStockProducts(limit);
-        SuccessResponseDTO response = new SuccessResponseDTO(true, stockProducts);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, stockProducts));
     }
 
     @GetMapping("/product/coin")
     public ResponseEntity<SuccessResponseDTO> getCoinProductList() {
         List<CoinProduct> coinProducts = financeService.findCoinProducts();
-        SuccessResponseDTO response = new SuccessResponseDTO(true, coinProducts);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new SuccessResponseDTO(true, coinProducts));
     }
 
 }

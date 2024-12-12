@@ -21,10 +21,19 @@ public class BondDTO {
     private Integer cnt;
     private Integer price;
     private String addDate;
+    private String deleteDate;
 
     public static BondDTO convertToDTO(Bond bond) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        return new BondDTO(bond.getIndex(), bond.getName(), bond.getCnt(), bond.getPrice(), dateFormat.format(bond.getAddDate()));
+
+        Integer index = bond.getIndex();
+        String name = bond.getName();
+        Integer count = bond.getCnt();
+        Integer price = bond.getPrice();
+        String addDate = (bond.getAddDate() != null) ? dateFormat.format(bond.getAddDate()) : null;
+        String deleteDate = (bond.getDeleteDate() != null) ? dateFormat.format(bond.getDeleteDate()) : null;
+
+        return new BondDTO(index, name, count, price, addDate, deleteDate);
     }
 
     public static Bond convertToEntity(Member member, BondDTO bondDTO) throws ParseException {
@@ -32,6 +41,9 @@ public class BondDTO {
         Date addDate = (bondDTO.getAddDate() != null)
                 ? dateFormat.parse(bondDTO.getAddDate())
                 : null;  // null 값 유지
-        return new Bond(bondDTO.getIndex(), member, bondDTO.getName(), bondDTO.getCnt(), "bond", bondDTO.getPrice(), addDate, null);
+        Date delDate = (bondDTO.getDeleteDate() != null)
+                ? dateFormat.parse(bondDTO.getDeleteDate())
+                : null;  // null 값 유지
+        return new Bond(bondDTO.getIndex(), member, bondDTO.getName(), bondDTO.getCnt(), "bond", bondDTO.getPrice(), addDate, delDate);
     }
 }

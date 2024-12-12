@@ -8,7 +8,7 @@ import java.util.List;
 public interface BankService {
     List<BankDTO> getBankList(Integer uid);
 
-    BankDTO addBank(Integer uid, BankDTO bankDTO) throws ParseException;
+    BankDTO addBank(Integer uid, BankDTO bankDTO);
 
     BankDTO updateBank(Integer uid, BankDTO bankDTO);
 

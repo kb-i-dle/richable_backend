@@ -22,11 +22,22 @@ public class BankDTO {
     private String accountType;
     private Long balanceAmt;
     private String addDate;
+    private String deleteDate;
 
     public static BankDTO convertToDTO(Bank bank) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        return new BankDTO(bank.getIndex(), bank.getOrgCode(), bank.getAccountNum(), bank.getName(), bank.getCategory(), bank.getAccountType(), bank.getBalanceAmt(), (bank.getAddDate() != null) ? dateFormat.format(bank.getAddDate()) : null);
+        Integer index = bank.getIndex();
+        String orgCode = bank.getOrgCode();
+        String accountNum = bank.getAccountNum();
+        String name = bank.getName();
+        String category = bank.getCategory();
+        String accountType = bank.getAccountType();
+        Long balanceAmt = bank.getBalanceAmt();
+        String addDate = (bank.getAddDate() != null) ? dateFormat.format(bank.getAddDate()) : null;
+        String deleteDate = (bank.getDeleteDate() != null) ? dateFormat.format(bank.getDeleteDate()) : null;
+
+        return new BankDTO(index, orgCode, accountNum, name, category, accountType, balanceAmt, addDate, deleteDate);
     }
 
     public static Bank convertToEntity(Member member, BankDTO bankDTO) throws ParseException {
@@ -34,11 +45,14 @@ public class BankDTO {
         Date addDate = (bankDTO.getAddDate() != null)
                 ? dateFormat.parse(bankDTO.getAddDate())
                 : null;  // null 값 유지
+        Date delDate = (bankDTO.getDeleteDate() != null)
+                ? dateFormat.parse(bankDTO.getDeleteDate())
+                : null;  // null 값 유지
         String type = bankDTO.getProdCategory().equals("예금") ? "01" :
                         bankDTO.getProdCategory().equals("적금") ? "02" :
                         bankDTO.getProdCategory().equals("청약") ? "03" :
                         bankDTO.getProdCategory().equals("입출금") ? "04" : "00";
 
-        return new Bank(bankDTO.getIndex(), member, bankDTO.getOrgCode(), bankDTO.getAccountNum(), bankDTO.getProdName(), bankDTO.getProdCategory(), type, "KRW", bankDTO.getBalanceAmt(), addDate, null);
+        return new Bank(bankDTO.getIndex(), member, bankDTO.getOrgCode(), bankDTO.getAccountNum(), bankDTO.getProdName(), bankDTO.getProdCategory(), type, "KRW", bankDTO.getBalanceAmt(), addDate, delDate);
     }
 }
