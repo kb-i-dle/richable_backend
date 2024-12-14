@@ -44,7 +44,7 @@ public class BondServiceImpl implements BondService {
     }
 
     @Override
-    public BondDTO addBond(Integer uid, BondDTO bondDTO) throws ParseException {
+    public BondDTO addBond(Integer uid, BondDTO bondDTO) {
         Member member = memberService.findMemberByUid(uid);
         Bond savedBond = bondRepository.save(BondDTO.convertToEntity(member, bondDTO));
         assetSummaryRepository.insertOrUpdateAssetSummary(uid);

@@ -2,6 +2,7 @@ package com.idle.kb_i_dle_backend.domain.finance.dto;
 
 import com.idle.kb_i_dle_backend.domain.finance.entity.Coin;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
+import com.idle.kb_i_dle_backend.global.DateUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.Setter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 @Getter
@@ -36,14 +38,22 @@ public class CoinDTO {
         return new CoinDTO(index, currency, balance, avgBuyPrice, addDate, deleteDate);
     }
 
-    public static Coin convertToEntity(Member member, CoinDTO coinDTO) throws ParseException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date addDate = (coinDTO.getAddDate() != null)
-                ? dateFormat.parse(coinDTO.getAddDate())
-                : null;  // null 값 유지
-        Date delDate = (coinDTO.getDeleteDate() != null)
-                ? dateFormat.parse(coinDTO.getDeleteDate())
-                : null;  // null 값 유지
-        return new Coin(coinDTO.getIndex(), member, coinDTO.getCurrency(), coinDTO.getBalance(), coinDTO.getAvgBuyPrice(), "KRW", "coin" , addDate, delDate);
+    public static Coin convertToEntity(Member member, CoinDTO coinDTO) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        Date addDate = DateUtil.parseDateToUtilDate(coinDTO.getAddDate(), formatter);
+        Date delDate = DateUtil.parseDateToUtilDate(coinDTO.getDeleteDate(), formatter);
+
+        return new Coin(
+                coinDTO.getIndex(),
+                member,
+                coinDTO.getCurrency(),
+                coinDTO.getBalance(),
+                coinDTO.getAvgBuyPrice(),
+                "KRW",
+                "coin",
+                addDate,
+                delDate
+        );
     }
 }
