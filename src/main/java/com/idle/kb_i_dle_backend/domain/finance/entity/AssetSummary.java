@@ -12,10 +12,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
 
 @Entity
 @Table(name = "asset_summary", catalog = "asset")
 @Getter
+@Setter
 public class AssetSummary {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,6 +1,7 @@
 package com.idle.kb_i_dle_backend.domain.finance.repository;
 
 import com.idle.kb_i_dle_backend.domain.finance.entity.StockPrice;
+import com.idle.kb_i_dle_backend.domain.finance.entity.StockProduct;
 import java.util.Date;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -54,21 +55,16 @@ public interface StockPriceRepository extends JpaRepository<StockPrice, Long> {
             "VALUES (:standardCode, :date, :price)", nativeQuery = true)
     void insertStockPrice(@Param("price") Integer price, @Param("standardCode") String standardCode, @Param("date") Date date);
 
-// insertStockPrice에서 stock_nm 업데이트
-//    use product;
-//-- 임시 테이블 생성
-//    CREATE TEMPORARY TABLE temp_stock_names AS
-//    SELECT sp2.standard_code, sp2.stock_nm
-//    FROM product.stock_price AS sp2
-//    WHERE sp2.stock_nm IS NOT NULL;
-//
-//-- NULL인 stock_nm을 업데이트
-//    UPDATE product.stock_price AS sp
-//    JOIN temp_stock_names AS temp ON sp.standard_code = temp.standard_code
-//    SET sp.stock_nm = temp.stock_nm
-//    WHERE sp.stock_nm IS NULL;
-//
-//-- 임시 테이블 삭제 (선택적)
-//    DROP TEMPORARY TABLE temp_stock_names;
+    @Query(value = "SELECT sp.* FROM product.stock_price sp " +
+            "INNER JOIN (SELECT MAX(date) as max_date FROM product.stock_price) latest " +
+            "ON sp.date = latest.max_date " +
+            "WHERE sp.price IS NOT NULL " +
+            "ORDER BY sp.price DESC " +
+            "LIMIT 5",
+            nativeQuery = true)
+    List<StockPrice> findTop5ByLatestDateOrderByPriceDesc();
+
+    @Query("select s from StockPrice s where s.standard_code=:stcd")
+    StockPrice findByStandard_code(String stcd);
 
 }

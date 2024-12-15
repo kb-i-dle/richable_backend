@@ -1,6 +1,7 @@
 package com.idle.kb_i_dle_backend.domain.finance.repository;
 
 import com.idle.kb_i_dle_backend.domain.finance.entity.Bond;
+import com.idle.kb_i_dle_backend.domain.finance.entity.BondProduct;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
 import java.util.List;
 import java.util.Optional;
@@ -62,5 +63,7 @@ public interface BondRepository extends JpaRepository<Bond, Integer> {
                     "GROUP BY month(b.add_date), b.prod_category", nativeQuery = true)
     List<Object[]> findMonthlyBondAssets(@Param("uid") Member uid);
 
+    @Query("SELECT bp FROM BondProduct bp WHERE bp.isinCdNm = :isinCdNm")
+    BondProduct findByIsinCdNm(@Param("isinCdNm") String isinCdNm);
 
 }

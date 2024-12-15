@@ -3,6 +3,7 @@ package com.idle.kb_i_dle_backend.domain.member.util;
 import java.util.Collections;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
+@Slf4j
 public class JwtInterceptor implements HandlerInterceptor {
 
     private JwtProcessor jwtProcessor;
@@ -25,6 +27,8 @@ public class JwtInterceptor implements HandlerInterceptor {
         String token = request.getHeader("Authorization");
         if (token != null && token.startsWith("Bearer ")) {
             token = token.replace("Bearer ", "");
+            log.info("jwt JwtInterceptor token");
+
             try {
                 Integer uid = jwtProcessor.getUid(token);
 //                request.setAttribute("uid", uid);  // UID를 HttpServletRequest에 저장

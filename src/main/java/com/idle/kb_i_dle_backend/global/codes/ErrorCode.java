@@ -28,6 +28,9 @@ public enum ErrorCode {
     // com.google.gson JSON 파싱 실패
     JSON_PARSE_ERROR(400, "G006", "JsonParseException"),
 
+    //특정 오류에 대한 세부 정보를 정의함
+    PARSE_ERROR(400, "G013", "Parse Error occurred"),
+
     // com.fasterxml.jackson.core Processing Error
     JACKSON_PROCESS_ERROR(400, "G007", "com.fasterxml.jackson.core Exception"),
 
@@ -76,10 +79,7 @@ public enum ErrorCode {
 
     INVALID_GOAL(200, "G04", "Invalid Goal"),
 
-    //INCOME
-
     //Bond
-
     INVALID_BOND(200, "BO01", "user dont have bond"),
 
     //Bank
@@ -94,9 +94,29 @@ public enum ErrorCode {
     INVALID_STOCK(200, "ST01", "USER DONT HAVE STOCK"),
 
     //INCOME
-    INVALID_INCOME(200, "I01", "USER DONT HAVE INCOME"),
+    INCOME_PARSE_ERROR(400, "I06", "Income date parse error"),
+
+    INVALID_INCOME(404, "I01", "User does not have income data"),
+
+    NO_INCOME_DATA(404, "I02", "No income data found"),
+
+    INCOME_CREATION_FAILED(500, "I03", "Failed to create income"),
+
+    INCOME_UPDATE_FAILED(500, "I04", "Failed to update income"),
+
+    INCOME_DELETION_FAILED(500, "I05", "Failed to delete income"),
+
+
 
     //Invest
+    NO_ASSETS_FOUND(200, "IV01", "No assets found for the user"),
+    NO_INVESTMENT_DATA(200, "IV02", "No investment data found"),
+    NO_CATEGORY_FOUND(200, "IV03", "No category found for the user"),
+    NO_AVAILABLE_CASH(200, "IV04", "No available cash"),
+    NO_RECOMMENDED_PRODUCTS(200, "IV05", "No recommended products found"),
+    NO_HIGH_RETURN_STOCK(200, "IV06", "No high return stock products found"),
+    NO_HIGH_RETURN_COIN(200, "IV07", "No high return coin products found"),
+    NO_HIGH_RETURN_PRODUCTS(200, "IV08", "No high return products found"),
 
     //OUTCOME
     INVALID_OUTCOME(200, "O01", "User dont have outcome"),
@@ -108,12 +128,30 @@ public enum ErrorCode {
     EMAIL_NOT_FOUND(400, "M04", "email not found"),
     INVALID_VERIFICATION_CODE(400, "M05", "Invalid Verification Code"),
     MEMBER_NOT_FOUND(400, "M06", "member not found by id"),
+    TOKEN_IS_NOT_VALID(401, "M07", "token is not valid"),
+    PERMISSION_FORBIDDEN(403, "M08", "permission forbidden"),
+    NAVER_LOGIN_FAILED(400, "M09", "navigate failed"),
+    INVALID_INPUT(500,"M10","Invalid Input"),
 
+    // Asset Summary
+    ASSET_SUMMARY_NOT_FOUND(404, "A01", "asset summary not found"),
+    DATABASE_UPDATE_ERROR(500, "DB01", "Error updating asset summary for user"),
+
+    // Database 관련 에러
+    DATABASE_ERROR(500, "DB01", "Database Access Error"),
+
+
+    // 기타 필요한 에러 코드들
+    UNKNOWN_ERROR(500, "G999", "An unexpected error occurred"),
 
     //S3
     INVALID_FILE(400, "S01", "Invalid File"),
-    ;;
 
+    NO_SUCH_ALGO(500, "S02", "INVALID ALGO"),
+
+    //master
+    UPDATE_STOCKERROR(400,"M01","Error in update"),
+    ;;
 
     /**
      * ******************************* Error Code Constructor ***************************************

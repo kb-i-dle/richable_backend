@@ -3,15 +3,18 @@ package com.idle.kb_i_dle_backend.domain.finance.service.impl;
 import com.idle.kb_i_dle_backend.config.exception.CustomException;
 import com.idle.kb_i_dle_backend.domain.finance.dto.BankDTO;
 import com.idle.kb_i_dle_backend.domain.finance.entity.Bank;
+import com.idle.kb_i_dle_backend.domain.finance.repository.AssetSummaryRepository;
 import com.idle.kb_i_dle_backend.domain.finance.repository.BankRepository;
 import com.idle.kb_i_dle_backend.domain.finance.service.BankService;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
 import com.idle.kb_i_dle_backend.domain.member.service.MemberService;
+import com.idle.kb_i_dle_backend.domain.member.util.AESUtil;
 import com.idle.kb_i_dle_backend.global.codes.ErrorCode;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +25,9 @@ public class BankServiceImpl implements BankService {
 
     private final MemberService memberService;
     private final BankRepository bankRepository;
+    private final AssetSummaryRepository assetSummaryRepository;
+
+    private static final String ENCRYPTION_SECRET = "TPk93NCNEQKs66+Ht89m+qVM8WkXoysjxanI7qh9hK0=";
 
     @Override
     public List<BankDTO> getBankList(Integer uid) {
@@ -35,6 +41,8 @@ public class BankServiceImpl implements BankService {
         List<BankDTO> bankList = new ArrayList<>();
         for (Bank b : banks) {
             BankDTO bankDTO = BankDTO.convertToDTO(b);
+            bankDTO.setAccountNum(
+                    AESUtil.decrypt(String.valueOf(bankDTO.getAccountNum()),ENCRYPTION_SECRET));
             bankList.add(bankDTO);
         }
 
@@ -42,9 +50,12 @@ public class BankServiceImpl implements BankService {
     }
 
     @Override
-    public BankDTO addBank(Integer uid, BankDTO bankDTO) throws ParseException {
+    public BankDTO addBank(Integer uid, BankDTO bankDTO) {
         Member member = memberService.findMemberByUid(uid);
+        bankDTO.setAccountNum(AESUtil.encrypt(String.valueOf(bankDTO.getAccountNum()),ENCRYPTION_SECRET));
         Bank savedBank = bankRepository.save(BankDTO.convertToEntity(member, bankDTO));
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
 
         return BankDTO.convertToDTO(savedBank);
     }
@@ -67,6 +78,10 @@ public class BankServiceImpl implements BankService {
         isBank.setBalanceAmt(bankDTO.getBalanceAmt());
 
         Bank savedBank = bankRepository.save(isBank);
+
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
+
         return BankDTO.convertToDTO(savedBank);
     }
 
@@ -88,6 +103,16 @@ public class BankServiceImpl implements BankService {
         isBank.setDeleteDate(new Date());
 
         Bank savedBank = bankRepository.save(isBank);
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
         return BankDTO.convertToDTO(savedBank);
+    }
+
+    public List<BankDTO> getAccount(Integer uid) {
+        Member member = memberService.findMemberByUid(uid);
+        List<Bank> accountBank = bankRepository.findByUidAndSpecificCategoriesAndDeleteDateIsNull(member);
+        return accountBank.stream()
+                .map(BankDTO::convertToDTO)
+                .collect(Collectors.toList());
     }
 }

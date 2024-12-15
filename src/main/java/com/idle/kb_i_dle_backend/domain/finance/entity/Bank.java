@@ -30,7 +30,7 @@ public class Bank {
     private String orgCode;
 
     @Column(name = "account_num")
-    private Long accountNum;
+    private String accountNum;
 
     @Column(name = "prod_name",length = 100)
     private String name;

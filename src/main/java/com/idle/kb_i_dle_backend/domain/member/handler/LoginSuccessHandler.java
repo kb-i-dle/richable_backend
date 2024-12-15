@@ -1,8 +1,7 @@
 package com.idle.kb_i_dle_backend.domain.member.handler;
 
 import com.idle.kb_i_dle_backend.domain.member.dto.AuthResultDTO;
-import com.idle.kb_i_dle_backend.domain.member.dto.CustomUser;
-import com.idle.kb_i_dle_backend.domain.member.dto.MemberDTO;
+import com.idle.kb_i_dle_backend.domain.member.dto.CustomUserDetails;
 import com.idle.kb_i_dle_backend.domain.member.dto.MemberInfoDTO;
 import com.idle.kb_i_dle_backend.domain.member.util.JsonResponse;
 import com.idle.kb_i_dle_backend.domain.member.util.JwtProcessor;
@@ -23,17 +22,16 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtProcessor jwtProcessor;
 
-    private AuthResultDTO makeAuthResult(CustomUser user) {
-        MemberDTO member = user.getMember();
-        String username = member.getId();
-        Integer uid = member.getUid();
-        String nickname = member.getNickname();
-        String email = member.getEmail();
-        String auth = member.getAuth().toString();
+    private AuthResultDTO makeAuthResult(CustomUserDetails user) {
+        String username = user.getUsername();
+        Integer uid = user.getMember().getUid();
+        String nickname = user.getMember().getNickname();
+        String email = user.getMember().getEmail();
+        String auth = user.getAuthorities().toString();
         // Generate token
         String token = jwtProcessor.generateToken(username, uid, nickname, email);
         // Combine token and user info into AuthResultDTO
-        MemberInfoDTO userInfo = new MemberInfoDTO(uid, username, nickname,auth,email);
+        MemberInfoDTO userInfo = new MemberInfoDTO(uid, username, nickname, auth, email);
         return new AuthResultDTO(token, userInfo);
     }
 
@@ -41,7 +39,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
         // Get the authenticated user
-        CustomUser user = (CustomUser) authentication.getPrincipal();
+        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
         // Generate the authentication result and send it as JSON
         AuthResultDTO result = makeAuthResult(user);
         JsonResponse.send(response, result);

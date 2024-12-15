@@ -1,8 +1,6 @@
 package com.idle.kb_i_dle_backend.domain.member.service;
 
-import com.idle.kb_i_dle_backend.domain.member.dto.LoginDTO;
-import com.idle.kb_i_dle_backend.domain.member.dto.MemberDTO;
-import com.idle.kb_i_dle_backend.domain.member.dto.MemberJoinDTO;
+import com.idle.kb_i_dle_backend.domain.member.dto.*;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
@@ -11,17 +9,19 @@ public interface MemberService {
 
     Map<String, Object> login(LoginDTO loginDTO);
 
-    Map<String, Object> initiateNaverLogin(HttpServletRequest request) throws Exception;
+    Map<String, Object> initiateNaverLogin(HttpServletRequest request);
 
-    Map<String, Object> processNaverCallback(String code, String state, HttpServletRequest request) throws Exception;
+    Map processNaverCallback(String code, String state);
 
     String registerMember(MemberJoinDTO signupDTO);
 
     boolean updateUserAgreement(String id, Map<String, Boolean> agreementData);
 
-    boolean checkDupl(String id);
+    Map<String, Object> checkDupl(String id);
 
     Member findMemberByUid(int id);
+
+    Member findMemberByNickname(String nickname);
 
     void MemberJoin(MemberJoinDTO memberjoindto);
 
@@ -33,7 +33,7 @@ public interface MemberService {
 
     String generateAndSaveVerificationCode(String email);
 
-    Map<String, Object> verifyCode(String email, String code);
+    VerificationResult verifyCode(String email, String code, VerificationType type);
 
     boolean resetPassword(String id, String newPassword);
 

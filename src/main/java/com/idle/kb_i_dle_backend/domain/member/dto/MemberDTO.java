@@ -35,4 +35,5 @@ public class MemberDTO {
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
     }
+
 }

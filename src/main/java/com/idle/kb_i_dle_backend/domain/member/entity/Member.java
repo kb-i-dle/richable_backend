@@ -1,6 +1,7 @@
 package com.idle.kb_i_dle_backend.domain.member.entity;
 
 import com.idle.kb_i_dle_backend.domain.finance.entity.Spot;
+import com.idle.kb_i_dle_backend.domain.member.dto.MemberJoinDTO;
 import javax.validation.constraints.NotNull;
 
 import lombok.*;
@@ -70,5 +71,22 @@ public class Member {
     // User와 UserApi의 관계 설정
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private MemberAPI memberAPI;
+
+    public static Member from(MemberJoinDTO dto) {
+        return Member.builder()
+                .id(dto.getId())
+                .password(dto.getPassword()) // 주의: 이 비밀번호는 아직 암호화되지 않았습니다.
+                .email(dto.getEmail())
+                .birth_year(dto.getBirth_year())
+                .gender(String.valueOf(dto.getGender()))
+                .nickname(dto.getNickname())
+                .auth(dto.getAuth())
+                .agreementInfo(dto.isAgreementInfo())
+                .agreementFinance(dto.isAgreementFinance())
+                .isMentor(false) // 기본값
+                .isCertification(false) // 기본값
+                .build();
+    }
+
 
 }

@@ -19,10 +19,18 @@ public class SpotDTO {
     private String name;
     private Long price;
     private String addDate;
+    private String deleteDate;
 
     public static SpotDTO convertToDTO(Spot spot) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        return new SpotDTO(spot.getIndex(), spot.getCategory(), spot.getName(), spot.getPrice(), dateFormat.format(spot.getAddDate()));
+        Integer index = spot.getIndex();
+        String category = spot.getCategory();
+        String name = spot.getName();
+        Long price = spot.getPrice();
+        String addDate = (spot.getAddDate() != null) ? dateFormat.format(spot.getAddDate()) : null;
+        String deleteDate = (spot.getDeleteDate() != null) ? dateFormat.format(spot.getDeleteDate()) : null;
+
+        return new SpotDTO(index, category, name, price, addDate, deleteDate);
     }
 
     public static Spot convertToEntity(Member member, SpotDTO spotDTO) throws ParseException {
@@ -30,6 +38,9 @@ public class SpotDTO {
         Date addDate = (spotDTO.getAddDate() != null)
                 ? dateFormat.parse(spotDTO.getAddDate())
                 : null;  // null 값 유지
-        return new Spot(spotDTO.getIndex(), member, spotDTO.getCategory(), spotDTO.getName(), spotDTO.getPrice(), "spot", addDate, null);
+        Date delDate = (spotDTO.getDeleteDate() != null)
+                ? dateFormat.parse(spotDTO.getDeleteDate())
+                : null;  // null 값 유지
+        return new Spot(spotDTO.getIndex(), member, spotDTO.getCategory(), spotDTO.getName(), spotDTO.getPrice(), "spot", addDate, delDate);
     }
 }

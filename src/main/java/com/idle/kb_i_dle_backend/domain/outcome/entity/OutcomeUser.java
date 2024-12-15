@@ -3,6 +3,7 @@ package com.idle.kb_i_dle_backend.domain.outcome.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
 
+import java.math.BigInteger;
 import lombok.*;
 
 import javax.persistence.*;
@@ -43,6 +44,9 @@ public class OutcomeUser {
     private String descript;
 
     private String memo;
+
+    @Column(name = "account_num")  // 실제 테이블의 컬럼과 매핑
+    private Long accountNum;
 
 //    // 엔티티가 처음 영속화될 때(Date를 자동으로 설정)
 //    @PrePersist

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public final class JwtProcessor {
-    static private final long TOKEN_VALID_MILISECOND = 1000L * 60 * 60 * 24; // 60 minutes
+    static private final long TOKEN_VALID_MILISECOND = 1000L * 60 * 60 * 24; // 24h
     private static final String ENCRYPTION_SECRET = "TPk93NCNEQKs66+Ht89m+qVM8WkXoysjxanI7qh9hK0=";
 
     // For development use

@@ -1,15 +1,14 @@
 package com.idle.kb_i_dle_backend.global.response;
 
 import com.idle.kb_i_dle_backend.global.codes.ErrorCode;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.validation.BindingResult;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -31,6 +30,8 @@ public class ErrorResponse {
         this.status = code.getStatus();
         this.divisionCode = code.getDivisionCode();
         this.errors = new ArrayList<>();
+        this.reason = code.getMessage();
+        this.errors = List.of();
     }
 
     /**

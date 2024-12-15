@@ -1,6 +1,7 @@
 package com.idle.kb_i_dle_backend.domain.outcome.service.impl;
 
 import com.idle.kb_i_dle_backend.config.exception.CustomException;
+import com.idle.kb_i_dle_backend.domain.finance.repository.AssetSummaryRepository;
 import com.idle.kb_i_dle_backend.domain.income.service.IncomeService;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
 import com.idle.kb_i_dle_backend.domain.member.repository.MemberRepository;
@@ -47,6 +48,7 @@ public class OutcomeServiceImpl implements OutcomeService {
     private final MemberRepository memberRepository;
     private final MemberService memberService;
     private final IncomeService incomeService;
+    private final AssetSummaryRepository assetSummaryRepository;
 
 
     /**
@@ -322,6 +324,8 @@ public class OutcomeServiceImpl implements OutcomeService {
         Member tempMember = memberService.findMemberByUid(uid);
         OutcomeUser savedOutcome = outcomeUserRepository.save(
                 OutcomeUserDTO.convertToEntity(tempMember, outcomeUserDTO));
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
 
         return OutcomeUserDTO.convertToDTO(savedOutcome);
     }
@@ -353,6 +357,8 @@ public class OutcomeServiceImpl implements OutcomeService {
         isOutcomeUser.setMemo(outcomeUserDTO.getMemo());
 
         OutcomeUser savedOutcome = outcomeUserRepository.save(isOutcomeUser);
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
         return OutcomeUserDTO.convertToDTO(savedOutcome);
     }
 
@@ -370,6 +376,8 @@ public class OutcomeServiceImpl implements OutcomeService {
         }
 
         outcomeUserRepository.deleteByIndex(index);  // income 삭제
+        assetSummaryRepository.insertOrUpdateAssetSummary(uid);
+        //assetSummaryRepository.deleteDuplicateAssetSummary();
 
         return index;
     }

@@ -11,12 +11,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
@@ -62,6 +65,23 @@ public class GlobalExceptionHandler {
         final ErrorResponseDTO response = new ErrorResponseDTO(errorResponse);
         return new ResponseEntity<>(response, HTTP_STATUS_OK);
     }
+
+    @ExceptionHandler(AuthenticationException.class)
+    protected ResponseEntity<ErrorResponseDTO> handleAuthenticationException(AuthenticationException ex) {
+        log.error("AuthenticationException", ex);
+        final ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_UNAUTHOR, ex.getMessage());
+        final ErrorResponseDTO response = new ErrorResponseDTO(errorResponse);
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    protected ResponseEntity<ErrorResponseDTO> handleAccessDeniedException(AccessDeniedException ex) {
+        log.error("AccessDeniedException", ex);
+        final ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_UNAUTHOR, ex.getMessage());
+        final ErrorResponseDTO response = new ErrorResponseDTO(errorResponse);
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
 
     /**
      * [Exception] 클라이언트에서 Body로 '객체' 데이터가 넘어오지 않았을 경우

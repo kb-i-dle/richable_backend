@@ -1,31 +1,28 @@
 package com.idle.kb_i_dle_backend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.idle.kb_i_dle_backend.domain.member.util.JwtInterceptor;
+import com.idle.kb_i_dle_backend.domain.member.util.ExecutionTimeAspect;
 import com.idle.kb_i_dle_backend.domain.member.util.JwtProcessor;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @EnableWebMvc
@@ -34,32 +31,32 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
         "com.idle.kb_i_dle_backend"
 })
 @PropertySource("classpath:application.properties")
-@EnableAspectJAutoProxy
+@EnableScheduling // 스케쥴링 어노테이션
 public class WebConfig implements WebMvcConfigurer {
 
     public WebConfig() {
         System.out.println("WebConfig created");
     }
 
-    @Autowired
-    @Lazy
-    private JwtInterceptor jwtInterceptor;
+    @Value("${front.server.url}")
+    private String frontURL;
 
     @Bean
     public JwtProcessor jwtProcessor() {
         return new JwtProcessor();
     }
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        // jwtInterceptor() 메서드를 호출하여 빈을 주입
-        registry.addInterceptor(jwtInterceptor)
-                .addPathPatterns("/finance/**")
-                .addPathPatterns("/goal/**")
-                .addPathPatterns("/income/**")
-                .addPathPatterns("/outcome/**")
-                .addPathPatterns("/invest/**"); // 특정 URL 패턴에 대해 인터셉터 적용
-    }
+    //    @Override
+//    public void addInterceptors(InterceptorRegistry registry) {
+//        // jwtInterceptor() 메서드를 호출하여 빈을 주입
+//        registry.addInterceptor(jwtInterceptor)
+//                .addPathPatterns("/finance/**")
+//                .addPathPatterns("/goal/**")
+//                .addPathPatterns("/income/**")
+//                .addPathPatterns("/outcome/**")
+//                .addPathPatterns("/invest/**")
+//                .addPathPatterns("/asset/**"); // 특정 URL 패턴에 대해 인터셉터 적용
+//    }
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
@@ -82,10 +79,13 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         // CORS 정책 오류 해결
         registry.addMapping("/**")
-                .allowedMethods("*")
+                .allowedOrigins("https://www.richable.site", "http://richable.site", "http://localhost:5173",
+                        "http://localhost:4173","https://richable-backend")  // 허용할 Origin
                 .allowedOriginPatterns("*")
-                .allowedOrigins("http://localhost:5173")
-                .allowCredentials(true); // 프론트엔드 도메인
+                .allowedMethods("*")
+                .allowedHeaders("*")
+                .allowCredentials(true);  // 쿠키 및 인증 정보를 포함할 수 있도록 설정
+
     }
 
     @Bean
@@ -138,5 +138,10 @@ public class WebConfig implements WebMvcConfigurer {
         registry
                 .addResourceHandler("/" + dirName + "/**")
                 .addResourceLocations("file:/" + uploadPath + "/");
+    }
+
+    @Bean
+    public ExecutionTimeAspect executionTimeAspect() {
+        return new ExecutionTimeAspect();
     }
 }

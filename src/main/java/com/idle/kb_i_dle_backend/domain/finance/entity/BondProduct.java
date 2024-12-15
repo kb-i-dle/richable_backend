@@ -2,9 +2,12 @@ package com.idle.kb_i_dle_backend.domain.finance.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,8 +28,8 @@ public class BondProduct {
     @Column(name = "scrsItmsKcd")
     private String scrsItmsKcd;
 
-    @Column(name = "isinCd")
-    private String isinCd;
+//    @Column(name = "isinCd")
+//    private String isinCd;
 
     @Column(name = "scrsItmsKcdNm")
     private String scrsItmsKcdNm;
@@ -39,6 +42,10 @@ public class BondProduct {
 
     @Column(name = "price")
     private Integer price;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "isinCd", referencedColumnName = "isinCd")
+    private BondProductPrice bondProductPrice;
 
 
 }

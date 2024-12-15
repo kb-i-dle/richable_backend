@@ -41,12 +41,20 @@ public class AESUtil {
 
     public static String decrypt(String strToDecrypt, String secret) {
         try {
+            // 복호화 전 문자열 길이 확인: 15자 미만이면 복호화하지 않고 바로 반환
+            if (strToDecrypt == null || strToDecrypt.length() < 15) {
+                throw new IllegalArgumentException("복호화할 문자열의 길이가 유효하지 않습니다.");
+            }
+
             prepareSecreteKey(secret);
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
             return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));
+        } catch (IllegalArgumentException e) {
+            System.out.println("복호화를 건너뜁니다: " + e.getMessage());
+            return strToDecrypt;  // 복호화하지 않고 원본 문자열 반환
         } catch (Exception e) {
-            System.out.println("Error while decrypting: " + e.toString());
+            System.out.println("복호화 중 오류 발생: " + e.toString());
         }
         return null;
     }

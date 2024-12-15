@@ -81,4 +81,4 @@ jobs:
             echo "pull과정에서 생긴 none 태그 images 삭제"
             docker rmi $(docker images -f "dangling=true" -q)
             echo "새로운 컨테이너 실행"
-            docker run -d --name ${{ secrets.DOCKER_CONTAINER_NAME }} -p 80:8080 ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest 
+            docker run -d --name ${{ secrets.DOCKER_CONTAINER_NAME }} -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest 

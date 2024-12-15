@@ -36,8 +36,8 @@ public interface BankRepository extends JpaRepository<Bank, Integer> {
     Optional<Bank> findByIndexAndDeleteDateIsNull(@Param("index") Integer index);
 
     // 새로운 메서드: 특정 사용자의 "입출금" 또는 "현금" 카테고리에 해당하는 은행 계좌 조회
-    @Query("SELECT ub FROM Bank ub WHERE ub.uid = :uid AND ub.category IN ('입출금', '현금') AND ub.deleteDate IS NULL")
-    List<Bank> findByUidAndSpecificCategoriesAndDeleteDateIsNull(@Param("uid") Optional<Member> uid);
+//    @Query("SELECT ub FROM Bank ub WHERE ub.uid = :uid AND ub.category IN ('입출금', '현금') AND ub.deleteDate IS NULL")
+//    List<Bank> findByUidAndSpecificCategoriesAndDeleteDateIsNull(@Param("uid") int uid);
 
     @Query(value = "SELECT month(b.add_date) as month, b.prod_category as category, SUM(b.balance_amt) as totalAmount "
             +

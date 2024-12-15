@@ -6,15 +6,15 @@ import java.text.ParseException;
 import java.util.List;
 
 public interface SpotService {
-    PriceSumDTO getTotalPriceByCategory(Integer uid, String category) throws Exception;
+    PriceSumDTO getTotalPriceByCategory(Integer uid, String category);
 
-    PriceSumDTO getTotalPrice(Integer uid) throws Exception;
+    PriceSumDTO getTotalPrice(Integer uid);
 
-    List<SpotDTO> getSpotList(Integer uid) throws Exception;
+    List<SpotDTO> getSpotList(Integer uid);
 
     SpotDTO addSpot(Integer uid, SpotDTO spotDTO) throws ParseException;
 
-    SpotDTO updateSpot(Integer uid, SpotDTO spotDTO) throws ParseException;
+    SpotDTO updateSpot(Integer uid, SpotDTO spotDTO);
 
     SpotDTO deleteSpot(Integer uid, Integer index);
 
