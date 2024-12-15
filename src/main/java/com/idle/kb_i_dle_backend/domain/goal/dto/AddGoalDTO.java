@@ -9,4 +9,10 @@ public class AddGoalDTO {
     private String category;
     private String title;
     private long amount;
+
+    public AddGoalDTO(String category, String title, long amount) {
+        this.category = category;
+        this.title = title;
+        this.amount = amount;
+    }
 }

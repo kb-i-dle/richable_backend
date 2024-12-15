@@ -8,4 +8,9 @@ import lombok.Setter;
 public class RequestPriorityDTO {
     private int index;
     private int priority;
+
+    public RequestPriorityDTO(int index, int priority) {
+        this.index = index;
+        this.priority = priority;
+    }
 }

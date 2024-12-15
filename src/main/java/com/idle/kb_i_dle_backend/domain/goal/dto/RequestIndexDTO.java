@@ -7,4 +7,8 @@ import lombok.Setter;
 @Setter
 public class RequestIndexDTO {
     private int index;
+
+    public RequestIndexDTO(int index) {
+        this.index = index;
+    }
 }

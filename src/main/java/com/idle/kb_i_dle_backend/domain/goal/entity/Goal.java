@@ -2,9 +2,18 @@ package com.idle.kb_i_dle_backend.domain.goal.entity;
 
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
 import java.util.Date;
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -52,7 +61,7 @@ public class Goal {
     }
 
 
-    public Goal(Member uid,String category, String title, Long amount, Integer priority){
+    public Goal(Member uid, String category, String title, Long amount, Integer priority) {
         this.uid = uid;
         this.category = category;
         this.title = title;
@@ -62,12 +71,29 @@ public class Goal {
 
     }
 
-    public void updateToAchive(){
+    public void updateToAchive() {
         this.isAchive = true;
         this.priority = ACHIVE_PRIORIY;
     }
 
-    public void updatePriority(Integer priority){
+    /**
+     * test용
+     *
+     * @param index
+     * @param uid
+     * @param category
+     */
+    public Goal(Integer index, Member uid, String category) {
+        this.index = index;
+        this.uid = uid;
+        this.category = category;
+        this.title = "test title";
+        this.amount = 1000L;
+        this.priority = 1;
+        this.isAchive = false;
+    }
+
+    public void updatePriority(Integer priority) {
         this.priority = priority;
     }
 }

@@ -11,4 +11,8 @@ public class ResponseUpdateAchiveDTO {
     private int index;
     private boolean isAchive;
     private int priority;
+
+    public boolean getIsAchive() {
+        return isAchive;
+    }
 }

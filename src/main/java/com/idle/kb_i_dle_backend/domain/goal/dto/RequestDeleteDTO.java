@@ -8,4 +8,9 @@ import lombok.Setter;
 public class RequestDeleteDTO {
     private int index;
     private String category;
+
+    public RequestDeleteDTO(int index, String category) {
+        this.index = index;
+        this.category = category;
+    }
 }
