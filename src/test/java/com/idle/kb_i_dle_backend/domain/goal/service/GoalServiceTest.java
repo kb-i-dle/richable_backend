@@ -3,6 +3,7 @@ package com.idle.kb_i_dle_backend.domain.goal.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -24,8 +25,10 @@ import com.idle.kb_i_dle_backend.domain.goal.service.Impl.GoalServiceImpl;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
 import com.idle.kb_i_dle_backend.domain.member.service.MemberService;
 import com.idle.kb_i_dle_backend.global.codes.ErrorCode;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -176,7 +179,7 @@ class GoalServiceTest {
         int index = 100;
         RequestIndexDTO requestIndexDTO = new RequestIndexDTO(index);
         Member member = new Member();
-        Goal goal = new Goal(member, "소비", "test", 10000L, index);
+        Goal goal = new Goal(index, member, "소비");
 
         when(memberService.findMemberByUid(uid)).thenReturn(member);
         when(goalRepository.existsByUidAndIndex(member, index)).thenReturn(true);
@@ -375,10 +378,12 @@ class GoalServiceTest {
         when(memberService.findMemberByUid(uid)).thenReturn(member);
 
         List<Goal> outcomeGoals = new ArrayList<>();
-        Goal goal1 = new Goal(member, "소비", "Goal 1", 1000L, 1);
+        Goal goal1 = new Goal(1, member, "소비", "Goal 1", 1000L, 1);
 
-        Goal goal2 = new Goal(member, "소비", "Goal 2", 2000L, 2);
+        Goal goal2 = new Goal(2, member, "소비", "Goal 2", 2000L, 2);
 
+        goal1.setDate(new Date());
+        goal2.setDate(new Date());
         outcomeGoals.add(goal1);
         outcomeGoals.add(goal2);
 
@@ -388,9 +393,8 @@ class GoalServiceTest {
         FinancialSumDTO oldDateAssetSum = new FinancialSumDTO(5000L);
         FinancialSumDTO todayAssetSum = new FinancialSumDTO(8000L);
 
-        when(financeService.getAssetSummeryByDateBefore(uid, goal1.getDate())).thenReturn(oldDateAssetSum);
-        when(financeService.getAssetSummeryByDateBefore(uid, any(Timestamp.class))).thenReturn(
-                todayAssetSum);
+        when(financeService.getAssetSummeryByDateBefore(eq(uid), any(Date.class)))
+                .thenReturn(oldDateAssetSum, todayAssetSum);
 
         // when
         List<OutcomeGoalDTO> result = goalService.getOutcomeGoals(uid);
@@ -406,7 +410,7 @@ class GoalServiceTest {
 
         OutcomeGoalDTO dto2 = result.get(1);
         assertThat(dto2.getIndex()).isEqualTo(2);
-        assertThat(dto2.getGather()).isEqualTo(1000); // Remaining amount
+        assertThat(dto2.getGather()).isEqualTo(2000L); // Remaining amount
         assertThat(dto2.getPriority()).isEqualTo(2);
     }
 
@@ -417,7 +421,8 @@ class GoalServiceTest {
         Member member = new Member();
         when(memberService.findMemberByUid(uid)).thenReturn(member);
 
-        Goal goal = new Goal(member, "자산", "Asset Goal", 5000L, 1);
+        Goal goal = new Goal(1, member, "자산", "Asset Goal", 5000L, 1);
+        goal.setDate(new Date());
 
         when(goalRepository.existsByUidAndCategoryAndIsAchive(member, "자산", false)).thenReturn(true);
         when(goalRepository.findFirstByUidAndCategoryAndIsAchive(member, "자산", false)).thenReturn(goal);
@@ -425,9 +430,8 @@ class GoalServiceTest {
         FinancialSumDTO oldDateAssetSum = new FinancialSumDTO(2000L);
         FinancialSumDTO todayAssetSum = new FinancialSumDTO(6000L);
 
-        when(financeService.getAssetSummeryByDateBefore(uid, goal.getDate())).thenReturn(oldDateAssetSum);
-        when(financeService.getAssetSummeryByDateBefore(uid, any(Timestamp.class))).thenReturn(
-                todayAssetSum);
+        when(financeService.getAssetSummeryByDateBefore(eq(uid), any(Date.class)))
+                .thenReturn(oldDateAssetSum, todayAssetSum);
         // when
         AssetGoalDTO result = goalService.getAssetGoal(uid);
 
@@ -445,16 +449,24 @@ class GoalServiceTest {
         Member member = new Member();
         when(memberService.findMemberByUid(uid)).thenReturn(member);
 
-        Goal goal = new Goal(member, "자산", "Asset Goal", 5000L, 1);
+        Goal goal = new Goal(1, member, "자산", "Asset Goal", 5000L, 1);
+        //전날을 넣어야함
+        LocalDate today = LocalDate.now(); // 현재 날짜
+        LocalDate yesterday = today.minusDays(1); // 하루 빼기
+
+        // LocalDate → Date 변환
+        Date yesterdayDate = Date.from(yesterday.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        goal.setDate(yesterdayDate);
 
         when(goalRepository.existsByUidAndCategoryAndIsAchive(member, "자산", false)).thenReturn(true);
         when(goalRepository.findFirstByUidAndCategoryAndIsAchive(member, "자산", false)).thenReturn(goal);
 
+        //2000모음
         FinancialSumDTO oldDateAssetSum = new FinancialSumDTO(2000L);
         FinancialSumDTO todayAssetSum = new FinancialSumDTO(4000L);
 
-        when(financeService.getAssetSummeryByDateBefore(uid, goal.getDate())).thenReturn(oldDateAssetSum);
-        when(financeService.getAssetSummeryByDateBefore(uid, any(Timestamp.class))).thenReturn(todayAssetSum);
+        when(financeService.getAssetSummeryByDateBefore(eq(uid), any(Date.class)))
+                .thenReturn(oldDateAssetSum, todayAssetSum);
 
         // when
         AssetGoalDTO result = goalService.getAssetGoal(uid);

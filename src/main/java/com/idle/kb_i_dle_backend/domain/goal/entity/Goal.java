@@ -68,7 +68,6 @@ public class Goal {
         this.amount = amount;
         this.priority = priority;
         this.isAchive = false;
-
     }
 
     public void updateToAchive() {
@@ -91,6 +90,20 @@ public class Goal {
         this.amount = 1000L;
         this.priority = 1;
         this.isAchive = false;
+    }
+
+    public Goal(Integer index, Member uid, String category, String title, Long amount, Integer priority) {
+        this.index = index;
+        this.uid = uid;
+        this.category = category;
+        this.title = title;
+        this.amount = amount;
+        this.priority = priority;
+        this.isAchive = false;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 
     public void updatePriority(Integer priority) {
