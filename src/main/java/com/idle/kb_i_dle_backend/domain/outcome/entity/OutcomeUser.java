@@ -2,13 +2,23 @@ package com.idle.kb_i_dle_backend.domain.outcome.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.idle.kb_i_dle_backend.domain.member.entity.Member;
-
-import java.math.BigInteger;
-import lombok.*;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Getter
@@ -16,7 +26,7 @@ import java.util.Date;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "outcome_user",catalog = "outcome")
+@Table(name = "outcome_user", catalog = "outcome")
 public class OutcomeUser {
 
 
@@ -53,4 +63,12 @@ public class OutcomeUser {
 //    protected void onCreate() {
 //        this.date = new Date();  // 현재 시간을 자동으로 설정
 //    }
+
+    public OutcomeUser(Member uid, String category, Date date, Long amount) {
+        this.uid = uid;
+        this.category = category;
+        this.date = date;
+        this.amount = amount;
+    }
+
 }

@@ -1,11 +1,10 @@
 package com.idle.kb_i_dle_backend.domain.outcome.entity;
 
-import lombok.Getter;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import lombok.Getter;
 
 @Entity
 @Table(name = "outcome_expenditure_category", catalog = "outcome")
@@ -18,4 +17,7 @@ public class OutcomeCategory {
     @Column(name = "category_name")
     private String categoryName;
 
+    public void setCategoryName(String category) {
+        this.categoryName = category;
+    }
 }
