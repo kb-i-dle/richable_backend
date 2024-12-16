@@ -79,6 +79,18 @@ public enum ErrorCode {
 
     INVALID_GOAL(200, "G04", "Invalid Goal"),
 
+    // GOAL_NOT_FOUND: 특정 목표를 찾을 수 없을 때 발생합니다. 주어진 인덱스나 ID로 데이터베이스에서 목표를 조회할 수 없을 경우 이 에러가 반환됩니다.
+    GOAL_NOT_FOUND(404, "G06", "Goal Not Found"),
+
+    // GOAL_CREATION_FAILED: 목표 생성에 실패했을 때 발생합니다. 서버에서 목표를 저장하는 과정에서 오류가 발생하면 이 에러가 반환됩니다.
+    GOAL_CREATE_FAILED(500, "G07", "Failed to create goal"),
+
+    // GOAL_UPDATE_FAILED: 목표 업데이트에 실패했을 때 발생합니다. 서버에서 목표를 수정하는 과정에서 오류가 발생하면 이 에러가 반환됩니다.
+    GOAL_UPDATE_FAILED(500, "G08", "Failed to update goal"),
+
+    // GOAL_DELETION_FAILED: 목표 삭제에 실패했을 때 발생합니다. 서버에서 목표를 삭제하는 과정에서 오류가 발생하면 이 에러가 반환됩니다.
+    GOAL_DELETION_FAILED(500, "G09", "Failed to delete goal"),
+
     //Bond
     INVALID_BOND(200, "BO01", "user dont have bond"),
 
@@ -146,12 +158,13 @@ public enum ErrorCode {
 
     //S3
     INVALID_FILE(400, "S01", "Invalid File"),
-
     NO_SUCH_ALGO(500, "S02", "INVALID ALGO"),
+
+
 
     //master
     UPDATE_STOCKERROR(400,"M01","Error in update"),
-    ;;
+    ;
 
     /**
      * ******************************* Error Code Constructor ***************************************
