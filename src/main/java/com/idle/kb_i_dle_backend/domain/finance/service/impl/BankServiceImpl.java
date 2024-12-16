@@ -50,7 +50,7 @@ public class BankServiceImpl implements BankService {
     }
 
     @Override
-    public BankDTO addBank(Integer uid, BankDTO bankDTO) throws ParseException {
+    public BankDTO addBank(Integer uid, BankDTO bankDTO) {
         Member member = memberService.findMemberByUid(uid);
         bankDTO.setAccountNum(AESUtil.encrypt(String.valueOf(bankDTO.getAccountNum()),ENCRYPTION_SECRET));
         Bank savedBank = bankRepository.save(BankDTO.convertToEntity(member, bankDTO));

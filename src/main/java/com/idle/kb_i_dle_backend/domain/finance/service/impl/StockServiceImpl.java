@@ -45,7 +45,7 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public StockDTO addStock(Integer uid, StockDTO stockDTO) throws ParseException {
+    public StockDTO addStock(Integer uid, StockDTO stockDTO) {
         Member member = memberService.findMemberByUid(uid);
         Stock savedStock = stockRepository.save(StockDTO.convertToEntity(member, stockDTO));
         assetSummaryRepository.insertOrUpdateAssetSummary(uid);

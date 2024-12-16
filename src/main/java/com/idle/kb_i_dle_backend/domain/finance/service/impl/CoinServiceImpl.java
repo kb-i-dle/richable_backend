@@ -44,7 +44,7 @@ public class CoinServiceImpl implements CoinService {
     }
 
     @Override
-    public CoinDTO addCoin(Integer uid, CoinDTO coinDTO) throws ParseException {
+    public CoinDTO addCoin(Integer uid, CoinDTO coinDTO) {
         Member member = memberService.findMemberByUid(uid);
         Coin savedCoin = coinRepository.save(CoinDTO.convertToEntity(member, coinDTO));
         assetSummaryRepository.insertOrUpdateAssetSummary(uid);
