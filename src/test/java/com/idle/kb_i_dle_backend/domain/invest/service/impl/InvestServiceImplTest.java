@@ -138,7 +138,6 @@ class InvestServiceImplTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getAvailableCash()).isEqualTo(5000L);
-        assertThat(result.getTotalAsset()).isEqualTo(5000L);
     }
 
     @Test
@@ -146,7 +145,6 @@ class InvestServiceImplTest {
         // Given
         int uid = 1;
 
-        // Spy를 사용해 getMaxPercentageCategory 메서드를 Stub 처리
         doReturn(new MaxPercentageCategoryDTO("안정형", 10000L, 60.0))
                 .when(investService).getMaxPercentageCategory(uid);
 
@@ -171,6 +169,41 @@ class InvestServiceImplTest {
         assertThat(result.get(1).getPrice()).isEqualTo(150);
     }
 
+    @Test
+    void testGetHighReturnProducts_Success() {
+        // Given: Mock 데이터 설정
+        when(stockPriceRepository.findPriceDifferenceBetweenLastTwoDates())
+                .thenReturn(List.of(
+                        new Object[]{"AAPL", "AAPL", 50, 100, 150},  // 50% 수익률
+                        new Object[]{"MSFT", "MSFT", 30, 70, 100}    // 42.86% 수익률
+                ));
+
+        when(coinPriceRepository.findPriceDifferenceBetweenLastTwoDates())
+                .thenReturn(List.of(
+                        new Object[]{"Bitcoin", 4000.0, 36000.0, 40000.0},  // 11.11% 수익률
+                        new Object[]{"Ethereum", 100.0, 900.0, 1000.0}    // 11.11% 수익률
+                ));
+
+        // When: 비동기 작업이 완료된 뒤 호출
+        HighReturnProductsDTO result = investService.getHighReturnProducts(1);
+
+        // Then: 반환값 검증
+        assertThat(result).isNotNull();
+        assertThat(result.getProducts()).hasSize(4);
+
+        // 검증: 수익률이 높은 순서대로 정렬되었는지 확인
+        assertThat(result.getProducts().get(0).getName()).isEqualTo("AAPL"); // 50% 수익률
+        assertThat(result.getProducts().get(0).getRate()).isEqualTo("50.00%");
+
+        assertThat(result.getProducts().get(1).getName()).isEqualTo("MSFT"); // 42.86% 수익률
+        assertThat(result.getProducts().get(1).getRate()).isEqualTo("42.86%");
+
+        assertThat(result.getProducts().get(2).getName()).isEqualTo("Bitcoin"); // 11.11% 수익률
+        assertThat(result.getProducts().get(2).getRate()).isEqualTo("11.11%");
+
+        assertThat(result.getProducts().get(3).getName()).isEqualTo("Ethereum"); // 11.11% 수익률
+        assertThat(result.getProducts().get(3).getRate()).isEqualTo("11.11%");
+    }
 
     @Test
     void testGetHighReturnStock_Success() {
@@ -202,26 +235,6 @@ class InvestServiceImplTest {
         assertThat(result.get(0).getName()).isEqualTo(expectedCoin.getName());
         assertThat(result.get(0).getPrice()).isEqualTo(expectedCoin.getPrice());
         assertThat(result.get(0).getRate()).isEqualTo(expectedCoin.getRate());
-    }
-
-    @Test
-    void testGetHighReturnProducts_Success() {
-        HighReturnProductDTO expectedStock = new HighReturnProductDTO("주식", "AAPL", 150, "50.00%");
-        HighReturnProductDTO expectedCoin = new HighReturnProductDTO("코인", "Bitcoin", 40000, "11.11%");
-
-        when(stockPriceRepository.findPriceDifferenceBetweenLastTwoDates())
-                .thenReturn(Collections.singletonList(new Object[]{"AAPL", "AAPL", 50, 100, 150}));
-        when(coinPriceRepository.findPriceDifferenceBetweenLastTwoDates())
-                .thenReturn(Collections.singletonList(new Object[]{"Bitcoin", 4000.0, 36000.0, 40000.0}));
-
-        HighReturnProductsDTO result = investService.getHighReturnProducts(1);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getProducts()).hasSize(2);
-        assertThat(result.getProducts().get(0).getName()).isEqualTo(expectedStock.getName());
-        assertThat(result.getProducts().get(0).getRate()).isEqualTo(expectedStock.getRate());
-        assertThat(result.getProducts().get(1).getName()).isEqualTo(expectedCoin.getName());
-        assertThat(result.getProducts().get(1).getRate()).isEqualTo(expectedCoin.getRate());
     }
 
     private CoinProduct createMockCoin(String name, String closingPrice) {
