@@ -48,20 +48,19 @@ public class GoalServiceImpl implements GoalService {
      */
     @Override
     public GoalDTO saveGoal(int uid, AddGoalDTO addGoalDTO) {
-
-        try {//맞는 유저인지
+        try {
             Member member = memberService.findMemberByUid(uid);
 
-            //목표 카테고리 맞는지
             if (addGoalDTO.getCategory().equals("소비")) {
                 return saveOutcomeGoal(member, addGoalDTO);
-            } else if (addGoalDTO.getCategory().equals("자산")) {
+            }
+            if (addGoalDTO.getCategory().equals("자산")) {
                 return saveAssetGoal(member, addGoalDTO);
             }
+            throw new CustomException(ErrorCode.INVALID_CATEGORY, "없는 카테고리입니다");
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.INVALID_CATEGORY, "없는 카테고리 입니다.");
+            throw new CustomException(ErrorCode.GOAL_CREATE_FAILED, "목표 생성 중 오류 발생");
         }
-        return null;
     }
 
     @Override
@@ -95,10 +94,10 @@ public class GoalServiceImpl implements GoalService {
                 return new GoalDTO(responseGoal.getCategory(), responseGoal.getTitle(), responseGoal.getAmount(),
                         responseGoal.getPriority());
             }
+            throw new CustomException(ErrorCode.INVALID_GOAL, "이미 자산 목표가 있습니다");
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.INVALID_GOAL, "이미 자산 목표가 있습니다.");
+            throw new CustomException(ErrorCode.INVALID_GOAL, "자산 목표 생성중 오류발생");
         }
-        return null;
     }
 
     @Override
@@ -115,10 +114,10 @@ public class GoalServiceImpl implements GoalService {
                 //responseUpdateachive에 반환
                 return new ResponseUpdateAchiveDTO(goal.getIndex(), goal.getIsAchive(), goal.getPriority());
             }
+            throw new CustomException(ErrorCode.INVALID_INDEX, "달성할 수 없습니다");
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.INVALID_INDEX, "달성할 수 없습니다.");
+            throw new CustomException(ErrorCode.INVALID_INDEX, "목표 달성중 오류발생");
         }
-        return null;
     }
 
 
@@ -151,14 +150,12 @@ public class GoalServiceImpl implements GoalService {
                 if (deleteGoal.getCategory().equals("자산")) {
                     return new ResponseIndexDTO(deleteGoal.getIndex());
                 }
-
                 return new ResponseIndexDTO(requestDeleteDTO.getIndex());
             }
-
+            throw new CustomException(ErrorCode.INVALID_INDEX, "제거할 수 없는 목표입니다");
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.INVALID_INDEX, "제거할 수 없는 목표입니다.");
+            throw new CustomException(ErrorCode.INVALID_INDEX, "목표 제거 중 오류발생");
         }
-        return null;
     }
 
 
@@ -196,10 +193,10 @@ public class GoalServiceImpl implements GoalService {
                 return new ResponseUpdateAchiveDTO(requestPriorityDTO.getIndex(), targetGoal.getIsAchive(),
                         targetGoal.getPriority());
             }
+            throw new CustomException(ErrorCode.INVALID_INDEX, "우선순위 변경 방법이 잘못되었습니다");
         } catch (Exception e) {
             throw new CustomException(ErrorCode.INVALID_INDEX, "우선순위 변경 중 오류 발생");
         }
-        return null;
     }
 
 
@@ -241,20 +238,6 @@ public class GoalServiceImpl implements GoalService {
             throw new CustomException(ErrorCode.GOAL_NOT_FOUND, "소비 목표 조회 중 오류 발생");
         }
     }
-
-//
-//    private OutcomeGoalDTO calculateGather(Long amount, Goal goal){
-//        if(amount > goal.getAmount()){
-//            amount -= goal.getAmount();
-//            return new OutcomeGoalDTO(goal.getIndex(),
-//                    goal.getAmount(), goal.getTitle(),goal.getAmount(),goal.getDate(),goal.getPriority());
-//        }else{
-//            return new OutcomeGoalDTO(goal.getIndex(),
-//                    amount, goal.getTitle(),goal.getAmount(),goal.getDate(),goal.getPriority());
-//        }
-//    }
-
-
     @Override
     public AssetGoalDTO getAssetGoal(int uid) {
         try {
